@@ -102,3 +102,4 @@ C:\Users\vladimir.djordjevic\source\repos\RVAS-StayFinder\StayFinder\obj\Debug\n
 C:\Users\vladimir.djordjevic\source\repos\RVAS-StayFinder\StayFinder\obj\Debug\net9.0\StayFinder.pdb
 C:\Users\vladimir.djordjevic\source\repos\RVAS-StayFinder\StayFinder\obj\Debug\net9.0\StayFinder.genruntimeconfig.cache
 C:\Users\vladimir.djordjevic\source\repos\RVAS-StayFinder\StayFinder\obj\Debug\net9.0\ref\StayFinder.dll
+C:\Users\vladimir.djordjevic\source\repos\RVAS-StayFinder\StayFinder\obj\Debug\net9.0\StayFinder.sourcelink.json
