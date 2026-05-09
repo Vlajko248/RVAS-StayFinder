@@ -6,7 +6,7 @@ ASP.NET Core MVC aplikacija za izdavanje smeštaja, sa MongoDB bazom.
 
 1. Instalirati .NET 9 SDK.
 2. Pokrenuti MongoDB lokalno ili podesiti svoju konekciju. (https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.3.1-signed.msi)
-3. Proveriti `appsettings.json` i sekciju `MongoDbSettings`.
+3. Proveriti `appsettings.json` i sekciju `MongoDbSettings`. Baza: "StayFinderDb"
 4. Pokrenuti projekat:
 
 ```bash
