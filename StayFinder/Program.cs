@@ -35,9 +35,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-
-app.Run();
-
 /// dodatak poziv za dataseed ka bazi zbog testnih podataka
 /// 
 
@@ -46,3 +43,6 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
     await DataSeed.SeedAsync(context);
 }
+app.Run();
+
+
