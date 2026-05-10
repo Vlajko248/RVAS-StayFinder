@@ -12,3 +12,5 @@ public sealed class Accommodation
     public List<string> ImageUrls { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }
+
+///ovo je komentar za testni commit
