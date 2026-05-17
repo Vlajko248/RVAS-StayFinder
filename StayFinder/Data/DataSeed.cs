@@ -3,7 +3,7 @@ using MongoDB.Driver;
 
 
 /// ovo je testni data seed koji ce ubaciti testne podatke u bazu
- 
+
 namespace StayFinder.Data
 {
     public class DataSeed
@@ -17,6 +17,7 @@ namespace StayFinder.Data
             // 2. USERS
             var owner = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 Email = "owner@test.com",
                 FullName = "Owner User",
                 Role = "Owner",
@@ -26,6 +27,7 @@ namespace StayFinder.Data
 
             var guest = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 Email = "guest@test.com",
                 FullName = "Guest User",
                 Role = "Guest",
@@ -38,6 +40,7 @@ namespace StayFinder.Data
             // 3. ACCOMMODATIONS
             var acc1 = new Accommodation
             {
+                Id = Guid.NewGuid().ToString(),
                 OwnerId = owner.Id!,
                 Name = "Apartman 1",
                 Location = "Novi Sad",
@@ -50,6 +53,7 @@ namespace StayFinder.Data
 
             var acc2 = new Accommodation
             {
+                Id = Guid.NewGuid().ToString(),
                 OwnerId = owner.Id!,
                 Name = "Apartman 2",
                 Location = "Beograd",
@@ -65,6 +69,7 @@ namespace StayFinder.Data
             // 4. RESERVATION
             var reservation = new Reservation
             {
+                Id = Guid.NewGuid().ToString(),
                 AccommodationId = acc1.Id!,
                 GuestId = guest.Id!,
                 DateFrom = DateTime.UtcNow.AddDays(1),
