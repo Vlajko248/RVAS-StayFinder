@@ -31,6 +31,7 @@ public sealed class ReviewService : IReviewService
             .ToListAsync();
     }
 
+    // Korisnik ne moze vise puta da oceni isti smestaj.
     public async Task<bool> HasGuestReviewedAccommodationAsync(string guestId, string accommodationId)
     {
         return await _reviews
@@ -38,6 +39,7 @@ public sealed class ReviewService : IReviewService
             .AnyAsync();
     }
 
+    // Review je dozvoljen tek nakon zavrsene rezervacije.
     public async Task<bool> CanGuestReviewAccommodationAsync(string guestId, string accommodationId)
     {
         return await _reservationService.HasCompletedReservationAsync(guestId, accommodationId);

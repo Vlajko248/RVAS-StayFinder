@@ -3,7 +3,7 @@ using StayFinder.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Osnovna registracija servisa za MVC i Mongo bazu.
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 builder.Services.AddSingleton<MongoDbContext>();
@@ -12,6 +12,8 @@ builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+
+// Session koristimo kao jednostavan auth mehanizam za domaci.
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -40,12 +42,12 @@ app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Seed ide na startu da uvek imamo testne podatke kad je baza prazna.
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>();

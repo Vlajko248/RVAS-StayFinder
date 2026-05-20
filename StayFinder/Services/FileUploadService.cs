@@ -2,6 +2,7 @@ namespace StayFinder.Services;
 
 public sealed class FileUploadService : IFileUploadService
 {
+    // Jednostavna ogranicenja za studentski projekat.
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
     private static readonly HashSet<string> AllowedExtensions =
     [
@@ -18,6 +19,7 @@ public sealed class FileUploadService : IFileUploadService
         _environment = environment;
     }
 
+    // Provera da li je fajl validna slika pre upisa na disk.
     public bool IsValidImage(IFormFile file, out string? validationError)
     {
         validationError = null;
@@ -44,6 +46,7 @@ public sealed class FileUploadService : IFileUploadService
         return true;
     }
 
+    // Snima fajl u wwwroot/uploads i vraca relativnu putanju za prikaz.
     public async Task<string> UploadAccommodationImageAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
         if (!IsValidImage(file, out var validationError))

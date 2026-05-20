@@ -14,6 +14,7 @@ public class ReviewController : Controller
         _reviewService = reviewService;
     }
 
+    // Javni prikaz recenzija za jedan smestaj.
     [HttpGet]
     public async Task<IActionResult> ForAccommodation(string accommodationId)
     {
@@ -24,6 +25,7 @@ public class ReviewController : Controller
         return View(reviews);
     }
 
+    // Gost vidi samo svoje recenzije.
     [HttpGet]
     public async Task<IActionResult> MyReviews()
     {
@@ -35,6 +37,7 @@ public class ReviewController : Controller
         return View(reviews);
     }
 
+    // Recenzija moze samo ako su pravila iz servisa ispunjena.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(string accommodationId, int rating, string comment)

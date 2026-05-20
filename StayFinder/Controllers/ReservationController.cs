@@ -18,6 +18,7 @@ public class ReservationController : Controller
         _accommodationService = accommodationService;
     }
 
+    // Gost vidi samo svoje rezervacije preko session korisnika.
     [HttpGet]
     public async Task<IActionResult> MyReservations()
     {
@@ -29,6 +30,7 @@ public class ReservationController : Controller
         return View(reservations);
     }
 
+    // Vlasnik moze da vidi rezervacije samo za svoj smestaj.
     [HttpGet]
     public async Task<IActionResult> OwnerReservations(string accommodationId)
     {
@@ -65,6 +67,7 @@ public class ReservationController : Controller
         return View(reservation);
     }
 
+    // Kreiranje rezervacije sa proverom dostupnosti i automatskim racunanjem cene.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Reservation reservation)
@@ -116,6 +119,7 @@ public class ReservationController : Controller
         return RedirectToAction(nameof(MyReservations));
     }
 
+    // Brisanje moze gost koji je napravio rezervaciju ili owner smestaja.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string id)

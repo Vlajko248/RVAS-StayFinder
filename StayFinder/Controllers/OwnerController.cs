@@ -18,6 +18,7 @@ public class OwnerController : Controller
         _reservationService = reservationService;
     }
 
+    // Glavni owner dashboard sa osnovnom statistikom.
     [HttpGet]
     public async Task<IActionResult> Dashboard()
     {
@@ -44,6 +45,7 @@ public class OwnerController : Controller
         return View(model);
     }
 
+    // Pregled svih rezervacija koje pripadaju owner smestajima.
     [HttpGet]
     public async Task<IActionResult> Reservations()
     {

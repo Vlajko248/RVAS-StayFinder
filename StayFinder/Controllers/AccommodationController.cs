@@ -18,6 +18,7 @@ public class AccommodationController : Controller
         _fileUploadService = fileUploadService;
     }
 
+    // Javni listing svih smestaja.
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -25,6 +26,7 @@ public class AccommodationController : Controller
         return View(accommodations);
     }
 
+    // Detalji jednog smestaja.
     [HttpGet]
     public async Task<IActionResult> Details(string id)
     {
@@ -36,6 +38,7 @@ public class AccommodationController : Controller
         return View(accommodation);
     }
 
+    // Owner vidi samo svoje smestaje.
     [HttpGet]
     public async Task<IActionResult> MyAccommodations()
     {
@@ -56,6 +59,7 @@ public class AccommodationController : Controller
         return View();
     }
 
+    // Kreiranje smestaja + opcioni upload jedne slike.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Accommodation accommodation, IFormFile? imageFile)
@@ -139,6 +143,7 @@ public class AccommodationController : Controller
         }
     }
 
+    // Brisanje dozvoljeno samo vlasniku konkretnog smestaja.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string id)
