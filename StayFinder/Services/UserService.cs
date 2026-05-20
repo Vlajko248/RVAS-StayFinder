@@ -1,9 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using StayFinder.Data;
 using StayFinder.Models;
 
 namespace StayFinder.Services;
-
 
 public sealed class UserService : IUserService
 {
@@ -11,10 +11,16 @@ public sealed class UserService : IUserService
     //nastavak 
 
     private readonly IMongoCollection<User> _users;
+    private readonly PasswordHasher<User> _passwordHasher = new();
 
     public UserService(MongoDbContext context)
     {
         _users = context.Users;
+    }
+
+    private static string NormalizeEmail(string email)
+    {
+        return email.Trim().ToLowerInvariant();
     }
 
     // =========================
@@ -38,7 +44,8 @@ public sealed class UserService : IUserService
     // =========================
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+        var normalizedEmail = NormalizeEmail(email);
+        return await _users.Find(u => u.Email == normalizedEmail).FirstOrDefaultAsync();
     }
 
     // =========================
@@ -47,7 +54,12 @@ public sealed class UserService : IUserService
     public async Task CreateAsync(User user)
     {
         user.Id ??= Guid.NewGuid().ToString();
+        user.Email = NormalizeEmail(user.Email);
         user.CreatedAt = DateTime.UtcNow;
+        user.Role = string.IsNullOrWhiteSpace(user.Role) ? "Guest" : user.Role;
+
+        var plainPassword = user.PasswordHash;
+        user.PasswordHash = _passwordHasher.HashPassword(user, plainPassword);
 
         await _users.InsertOneAsync(user);
     }
@@ -62,9 +74,20 @@ public sealed class UserService : IUserService
         if (user == null)
             return null;
 
-        if (user.PasswordHash != password)
-            return null;
+        var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
 
-        return user;
+        if (verifyResult == PasswordVerificationResult.Success)
+            return user;
+
+        if (user.PasswordHash == password)
+        {
+            var newHash = _passwordHasher.HashPassword(user, password);
+            var update = Builders<User>.Update.Set(u => u.PasswordHash, newHash);
+            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
+            user.PasswordHash = newHash;
+            return user;
+        }
+
+        return null;
     }
 }

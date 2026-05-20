@@ -31,12 +31,25 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(User user)
     {
-        if (string.IsNullOrEmpty(user.Email) || string.IsNullOrEmpty(user.PasswordHash))
+        var email = user.Email?.Trim().ToLowerInvariant();
+        var password = user.PasswordHash?.Trim();
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             return BadRequest("Email and password are required.");
 
-        var existingUser = await _userService.GetByEmailAsync(user.Email);
+        if (!email.Contains('@'))
+            return BadRequest("Email format is invalid.");
+
+        if (password.Length < 6)
+            return BadRequest("Password must be at least 6 characters long.");
+
+        var existingUser = await _userService.GetByEmailAsync(email);
         if (existingUser != null)
             return BadRequest("User already exists.");
+
+        user.Email = email;
+        user.PasswordHash = password;
+        user.Role = "Guest";
 
         await _userService.CreateAsync(user);
 
@@ -49,6 +62,9 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Login(string email, string password)
     {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            return BadRequest("Email and password are required.");
+
         var user = await _userService.ValidateUserAsync(email, password);
 
         if (user == null)
@@ -92,6 +108,13 @@ public class AccountController : Controller
         if (user == null)
             return NotFound("User not found.");
 
-        return Ok(user);
+        return Ok(new
+        {
+            user.Id,
+            user.Email,
+            user.FullName,
+            user.Role,
+            user.CreatedAt
+        });
     }
 }

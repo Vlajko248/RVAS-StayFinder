@@ -1,4 +1,5 @@
-﻿using StayFinder.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using StayFinder.Models;
 using MongoDB.Driver;
 
 
@@ -14,6 +15,8 @@ namespace StayFinder.Data
             if (await context.Users.CountDocumentsAsync(_ => true) > 0)
                 return;
 
+            var passwordHasher = new PasswordHasher<User>();
+
             // 2. USERS
             var owner = new User
             {
@@ -21,9 +24,9 @@ namespace StayFinder.Data
                 Email = "owner@test.com",
                 FullName = "Owner User",
                 Role = "Owner",
-                PasswordHash = "test",
                 CreatedAt = DateTime.UtcNow
             };
+            owner.PasswordHash = passwordHasher.HashPassword(owner, "test123");
 
             var guest = new User
             {
@@ -31,9 +34,9 @@ namespace StayFinder.Data
                 Email = "guest@test.com",
                 FullName = "Guest User",
                 Role = "Guest",
-                PasswordHash = "test",
                 CreatedAt = DateTime.UtcNow
             };
+            guest.PasswordHash = passwordHasher.HashPassword(guest, "test123");
 
             await context.Users.InsertManyAsync(new[] { owner, guest });
 
