@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using StayFinder.Extensions;
 using StayFinder.Models;
 using StayFinder.Services;
 
@@ -17,48 +18,44 @@ public class ReservationController : Controller
         _accommodationService = accommodationService;
     }
 
-    // =========================
-    // GOST: Moje rezervacije
-    // =========================
-    public async Task<IActionResult> MyReservations(string guestId)
+    [HttpGet]
+    public async Task<IActionResult> MyReservations()
     {
-        if (string.IsNullOrEmpty(guestId))
-        {
-            return BadRequest("GuestId is required.");
-        }
+        var userId = HttpContext.GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+            return RedirectToAction("Login", "Account");
 
-        var reservations =
-            await _reservationService.GetByGuestIdAsync(guestId);
-
+        var reservations = await _reservationService.GetByGuestIdAsync(userId);
         return View(reservations);
     }
 
-    // =========================
-    // VLASNIK: rezervacije za smeštaj
-    // =========================
+    [HttpGet]
     public async Task<IActionResult> OwnerReservations(string accommodationId)
     {
-        if (string.IsNullOrEmpty(accommodationId))
-        {
+        var ownerId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
+            return RedirectToAction("Login", "Account");
+
+        if (string.IsNullOrWhiteSpace(accommodationId))
             return BadRequest("AccommodationId is required.");
-        }
 
-        var reservations =
-            await _reservationService.GetByAccommodationIdAsync(accommodationId);
+        var isOwner = await _accommodationService.IsOwnerOfAccommodationAsync(accommodationId, ownerId);
+        if (!isOwner)
+            return Forbid();
 
+        var reservations = await _reservationService.GetByAccommodationIdAsync(accommodationId);
         return View(reservations);
     }
 
-    // =========================
-    // kreiranje rezervacije (GET)
-    // =========================
     [HttpGet]
     public IActionResult Create(string accommodationId)
     {
-        if (string.IsNullOrEmpty(accommodationId))
-        {
+        var guestId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
+            return RedirectToAction("Login", "Account");
+
+        if (string.IsNullOrWhiteSpace(accommodationId))
             return BadRequest("AccommodationId is required.");
-        }
 
         var reservation = new Reservation
         {
@@ -68,51 +65,84 @@ public class ReservationController : Controller
         return View(reservation);
     }
 
-    // =========================
-    // kreiranje rezervacije (POST)
-    // =========================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Reservation reservation)
     {
+        var guestId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
+            return RedirectToAction("Login", "Account");
+
         if (reservation.DateFrom >= reservation.DateTo)
         {
-            ModelState.AddModelError("", "Invalid date range.");
+            ModelState.AddModelError(string.Empty, "Invalid date range.");
             return View(reservation);
         }
 
-        var isAvailable =
-            await _reservationService.IsAccommodationAvailableAsync(
-                reservation.AccommodationId,
-                reservation.DateFrom,
-                reservation.DateTo);
+        var accommodation = await _accommodationService.GetByIdAsync(reservation.AccommodationId);
+        if (accommodation == null)
+        {
+            ModelState.AddModelError(string.Empty, "Accommodation does not exist.");
+            return View(reservation);
+        }
+
+        var isAvailable = await _reservationService.IsAccommodationAvailableAsync(
+            reservation.AccommodationId,
+            reservation.DateFrom,
+            reservation.DateTo);
 
         if (!isAvailable)
         {
-            ModelState.AddModelError("", "This accommodation is already booked for selected dates.");
+            ModelState.AddModelError(string.Empty, "This accommodation is already booked for selected dates.");
             return View(reservation);
         }
 
-        await _reservationService.CreateAsync(reservation);
+        var totalNights = Math.Max(1, (reservation.DateTo.Date - reservation.DateFrom.Date).Days);
 
-        return RedirectToAction("MyReservations",
-            new { guestId = reservation.GuestId });
+        reservation.GuestId = guestId;
+        reservation.TotalPrice = totalNights * accommodation.PricePerNight;
+        reservation.Status = "Active";
+
+        try
+        {
+            await _reservationService.CreateAsync(reservation);
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(reservation);
+        }
+
+        return RedirectToAction(nameof(MyReservations));
     }
 
-    // =========================
-    // brisanje rezervacije
-    // =========================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string id)
     {
-        if (string.IsNullOrEmpty(id))
-        {
+        var userId = HttpContext.GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+            return RedirectToAction("Login", "Account");
+
+        if (string.IsNullOrWhiteSpace(id))
             return BadRequest("Id is required.");
-        }
+
+        var reservation = await _reservationService.GetByIdAsync(id);
+        if (reservation == null)
+            return NotFound();
+
+        var isGuestOwner = reservation.GuestId == userId;
+        var isAccommodationOwner = HttpContext.IsInRole("Owner") &&
+                                   await _accommodationService.IsOwnerOfAccommodationAsync(reservation.AccommodationId, userId);
+
+        if (!isGuestOwner && !isAccommodationOwner)
+            return Forbid();
 
         await _reservationService.DeleteAsync(id);
 
-        return RedirectToAction("MyReservations");
+        if (HttpContext.IsInRole("Owner"))
+            return RedirectToAction("Reservations", "Owner");
+
+        return RedirectToAction(nameof(MyReservations));
     }
 }

@@ -25,16 +25,22 @@ dotnet run
 
 ## Minimalno bezbedan custom auth (uradjeno)
 
-Nismo uvodili full Identity, nego smo uradili minimum da auth ne bude "plain text" i da može normalno za studentski projekat:
-
-- lozinke se hešuju preko `PasswordHasher` (vise se ne cuva plain text)
+- lozinke se hešuju preko `PasswordHasher`
 - session je ukljucen u `Program.cs` (`AddSession` + `UseSession`)
-- session cookie je `HttpOnly` i sa osnovnim bezbednosnim opcijama
-- email se normalizuje (trim + lower) pri registraciji i loginu
-- registracija ima osnovnu validaciju (`email`, min duzina lozinke)
-- novi korisnici dobijaju rolu `Guest` (da ne moze role escalation preko body-ja)
-- `Profile` endpoint ne vraca `PasswordHash`
-- stari test korisnici iz seeda su prebaceni na hešovane lozinke
+- email se normalizuje pri registraciji/loginu
+- registracija ima osnovnu validaciju
+- novi korisnici dobijaju rolu `Guest`
+
+## Backend dorade (uradjeno)
+
+- svi kontroleri su uskladjeni kao MVC kontroleri
+- owner/guest tokovi koriste centralizovane session helper-e
+- owner može da radi CRUD samo nad svojim smeštajima
+- rezervacije su vezane za trenutno ulogovanog gosta
+- owner može da vidi rezervacije samo svojih smeštaja
+- upload slika radi u `wwwroot/uploads` uz validaciju tipa i veličine
+- review modul je dodat (`ReviewService` + `ReviewController`)
+- review je dozvoljen samo gostu koji je imao završen boravak
 
 ## Test korisnici (DataSeed)
 
@@ -43,6 +49,9 @@ Ako je baza prazna, seed ubacuje:
 - `owner@test.com` / `test123`
 - `guest@test.com` / `test123`
 
-## Napomena
+Seed ubacuje i:
 
-Projektna osnova je spremna za dalji timski rad. CRUD logika, validacija i autorizacija treba da se implementiraju naknadno.
+- 2 smeštaja
+- 1 aktivnu rezervaciju
+- 1 završenu rezervaciju
+- 1 primer recenzije

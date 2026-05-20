@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using StayFinder.Models;
 using MongoDB.Driver;
+using StayFinder.Models;
 
 
 /// ovo je testni data seed koji ce ubaciti testne podatke u bazu
@@ -11,7 +11,7 @@ namespace StayFinder.Data
     {
         public static async Task SeedAsync(MongoDbContext context)
         {
-            // 1. Provera da li već ima podataka
+            // 1. Provera da li vec ima podataka
             if (await context.Users.CountDocumentsAsync(_ => true) > 0)
                 return;
 
@@ -69,8 +69,8 @@ namespace StayFinder.Data
 
             await context.Accommodations.InsertManyAsync(new[] { acc1, acc2 });
 
-            // 4. RESERVATION
-            var reservation = new Reservation
+            // 4. RESERVATIONS
+            var activeReservation = new Reservation
             {
                 Id = Guid.NewGuid().ToString(),
                 AccommodationId = acc1.Id!,
@@ -82,7 +82,32 @@ namespace StayFinder.Data
                 CreatedAt = DateTime.UtcNow
             };
 
-            await context.Reservations.InsertOneAsync(reservation);
+            var completedReservation = new Reservation
+            {
+                Id = Guid.NewGuid().ToString(),
+                AccommodationId = acc2.Id!,
+                GuestId = guest.Id!,
+                DateFrom = DateTime.UtcNow.AddDays(-10),
+                DateTo = DateTime.UtcNow.AddDays(-7),
+                TotalPrice = 210,
+                Status = "Completed",
+                CreatedAt = DateTime.UtcNow.AddDays(-11)
+            };
+
+            await context.Reservations.InsertManyAsync(new[] { activeReservation, completedReservation });
+
+            // 5. REVIEW
+            var review = new Review
+            {
+                Id = Guid.NewGuid().ToString(),
+                AccommodationId = acc2.Id!,
+                GuestId = guest.Id!,
+                Rating = 5,
+                Comment = "Odlican smestaj, sve preporuke.",
+                CreatedAt = DateTime.UtcNow.AddDays(-6)
+            };
+
+            await context.Reviews.InsertOneAsync(review);
         }
     }
 }

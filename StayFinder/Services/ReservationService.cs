@@ -6,9 +6,6 @@ namespace StayFinder.Services;
 
 public sealed class ReservationService : IReservationService
 {
-    // TODO: Implement reservation business logic.
-    ///nastavak
-    ///
     private readonly IMongoCollection<Reservation> _reservations;
 
     public ReservationService(MongoDbContext context)
@@ -21,6 +18,13 @@ public sealed class ReservationService : IReservationService
         return await _reservations
             .Find(_ => true)
             .ToListAsync();
+    }
+
+    public async Task<Reservation?> GetByIdAsync(string id)
+    {
+        return await _reservations
+            .Find(r => r.Id == id)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<List<Reservation>> GetByGuestIdAsync(string guestId)
@@ -37,10 +41,7 @@ public sealed class ReservationService : IReservationService
             .ToListAsync();
     }
 
-    public async Task<bool> IsAccommodationAvailableAsync(
-        string accommodationId,
-        DateTime dateFrom,
-        DateTime dateTo)
+    public async Task<bool> IsAccommodationAvailableAsync(string accommodationId, DateTime dateFrom, DateTime dateTo)
     {
         var overlappingReservation = await _reservations
             .Find(r =>
@@ -53,11 +54,23 @@ public sealed class ReservationService : IReservationService
         return overlappingReservation == null;
     }
 
+    public async Task<bool> HasCompletedReservationAsync(string guestId, string accommodationId)
+    {
+        return await _reservations
+            .Find(r =>
+                r.GuestId == guestId &&
+                r.AccommodationId == accommodationId &&
+                r.DateTo <= DateTime.UtcNow)
+            .AnyAsync();
+    }
+
     public async Task CreateAsync(Reservation reservation)
     {
+        ValidateReservation(reservation);
+
         reservation.Id ??= Guid.NewGuid().ToString();
         reservation.CreatedAt = DateTime.UtcNow;
-        reservation.Status ??= "Active";
+        reservation.Status = string.IsNullOrWhiteSpace(reservation.Status) ? "Active" : reservation.Status;
 
         await _reservations.InsertOneAsync(reservation);
     }
@@ -67,4 +80,18 @@ public sealed class ReservationService : IReservationService
         await _reservations.DeleteOneAsync(r => r.Id == id);
     }
 
+    private static void ValidateReservation(Reservation reservation)
+    {
+        if (string.IsNullOrWhiteSpace(reservation.AccommodationId))
+            throw new InvalidOperationException("Accommodation is required.");
+
+        if (string.IsNullOrWhiteSpace(reservation.GuestId))
+            throw new InvalidOperationException("Guest is required.");
+
+        if (reservation.DateFrom >= reservation.DateTo)
+            throw new InvalidOperationException("Date range is invalid.");
+
+        if (reservation.TotalPrice <= 0)
+            throw new InvalidOperationException("Total price must be greater than 0.");
+    }
 }

@@ -11,6 +11,7 @@ builder.Services.AddScoped<IAccommodationService, AccommodationService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -45,14 +46,12 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-/// dodatak poziv za dataseed ka bazi zbog testnih podataka
-/// 
-
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
     await DataSeed.SeedAsync(context);
 }
+
 app.Run();
 
 

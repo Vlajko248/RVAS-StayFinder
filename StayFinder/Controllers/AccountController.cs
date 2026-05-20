@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using StayFinder.Extensions;
 using StayFinder.Models;
 using StayFinder.Services;
 
@@ -7,8 +8,6 @@ namespace StayFinder.Controllers;
 
 public class AccountController : Controller
 {
-    // TODO: Add login, register, logout, and profile actions.
-    /// nastavak 
     private readonly IUserService _userService;
 
     public AccountController(IUserService userService)
@@ -22,74 +21,103 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Register()
     {
-        return Ok("Register endpoint ready");
+        return View();
     }
 
     // =========================
     // REGISTER (POST)
     // =========================
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(User user)
     {
         var email = user.Email?.Trim().ToLowerInvariant();
         var password = user.PasswordHash?.Trim();
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            return BadRequest("Email and password are required.");
+        {
+            ModelState.AddModelError(string.Empty, "Email and password are required.");
+            return View(user);
+        }
 
         if (!email.Contains('@'))
-            return BadRequest("Email format is invalid.");
+        {
+            ModelState.AddModelError(nameof(user.Email), "Email format is invalid.");
+            return View(user);
+        }
 
         if (password.Length < 6)
-            return BadRequest("Password must be at least 6 characters long.");
+        {
+            ModelState.AddModelError(nameof(user.PasswordHash), "Password must be at least 6 characters long.");
+            return View(user);
+        }
 
         var existingUser = await _userService.GetByEmailAsync(email);
         if (existingUser != null)
-            return BadRequest("User already exists.");
+        {
+            ModelState.AddModelError(nameof(user.Email), "User already exists.");
+            return View(user);
+        }
 
         user.Email = email;
         user.PasswordHash = password;
         user.Role = "Guest";
 
         await _userService.CreateAsync(user);
+        TempData["Message"] = "User registered successfully. Please login.";
 
-        return Ok("User registered successfully.");
+        return RedirectToAction(nameof(Login));
+    }
+
+    // =========================
+    // LOGIN (GET)
+    // =========================
+    [HttpGet]
+    public IActionResult Login()
+    {
+        return View();
     }
 
     // =========================
     // LOGIN (POST)
     // =========================
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string email, string password)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-            return BadRequest("Email and password are required.");
+        {
+            ModelState.AddModelError(string.Empty, "Email and password are required.");
+            return View();
+        }
 
         var user = await _userService.ValidateUserAsync(email, password);
 
         if (user == null)
-            return BadRequest("Invalid email or password.");
+        {
+            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            return View();
+        }
 
         // SESSION LOGIN
         HttpContext.Session.SetString("UserId", user.Id!);
         HttpContext.Session.SetString("Role", user.Role);
 
-        return Ok(new
-        {
-            message = "Login successful",
-            userId = user.Id,
-            role = user.Role
-        });
+        if (HttpContext.IsInRole("Owner"))
+            return RedirectToAction("Dashboard", "Owner");
+
+        return RedirectToAction("Index", "Home");
     }
 
     // =========================
     // LOGOUT
     // =========================
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
-        return Ok("Logged out successfully.");
+        return RedirectToAction("Index", "Home");
     }
 
     // =========================
@@ -98,23 +126,17 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> Profile()
     {
-        var userId = HttpContext.Session.GetString("UserId");
+        var userId = HttpContext.GetCurrentUserId();
 
         if (userId == null)
-            return Unauthorized("Not logged in.");
+            return RedirectToAction(nameof(Login));
 
         var user = await _userService.GetByIdAsync(userId);
 
         if (user == null)
             return NotFound("User not found.");
 
-        return Ok(new
-        {
-            user.Id,
-            user.Email,
-            user.FullName,
-            user.Role,
-            user.CreatedAt
-        });
+        user.PasswordHash = string.Empty;
+        return View(user);
     }
 }

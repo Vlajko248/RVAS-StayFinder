@@ -6,8 +6,6 @@ namespace StayFinder.Services;
 
 public sealed class AccommodationService : IAccommodationService
 {
-    // TODO: Implement accommodation business logic.
-    //ok nastavak za backend "Stevan"
     private readonly IMongoCollection<Accommodation> _accommodations;
 
     public AccommodationService(MongoDbContext context)
@@ -22,6 +20,13 @@ public sealed class AccommodationService : IAccommodationService
             .ToListAsync();
     }
 
+    public async Task<List<Accommodation>> GetByOwnerIdAsync(string ownerId)
+    {
+        return await _accommodations
+            .Find(a => a.OwnerId == ownerId)
+            .ToListAsync();
+    }
+
     public async Task<Accommodation?> GetByIdAsync(string id)
     {
         return await _accommodations
@@ -29,17 +34,28 @@ public sealed class AccommodationService : IAccommodationService
             .FirstOrDefaultAsync();
     }
 
+    public async Task<bool> IsOwnerOfAccommodationAsync(string accommodationId, string ownerId)
+    {
+        return await _accommodations
+            .Find(a => a.Id == accommodationId && a.OwnerId == ownerId)
+            .AnyAsync();
+    }
+
     public async Task CreateAsync(Accommodation accommodation)
     {
-        ///zastita ukoliko se na fronted ne postavi id
+        ValidateAccommodation(accommodation);
+
         accommodation.Id ??= Guid.NewGuid().ToString();
-        accommodation.CreatedAt = DateTime.UtcNow; 
+        accommodation.CreatedAt = DateTime.UtcNow;
 
         await _accommodations.InsertOneAsync(accommodation);
     }
 
     public async Task UpdateAsync(string id, Accommodation accommodation)
     {
+        ValidateAccommodation(accommodation);
+        accommodation.Id = id;
+
         await _accommodations.ReplaceOneAsync(a => a.Id == id, accommodation);
     }
 
@@ -48,4 +64,15 @@ public sealed class AccommodationService : IAccommodationService
         await _accommodations.DeleteOneAsync(a => a.Id == id);
     }
 
+    private static void ValidateAccommodation(Accommodation accommodation)
+    {
+        if (string.IsNullOrWhiteSpace(accommodation.Name))
+            throw new InvalidOperationException("Accommodation name is required.");
+
+        if (string.IsNullOrWhiteSpace(accommodation.Location))
+            throw new InvalidOperationException("Accommodation location is required.");
+
+        if (accommodation.PricePerNight <= 0)
+            throw new InvalidOperationException("Price per night must be greater than 0.");
+    }
 }

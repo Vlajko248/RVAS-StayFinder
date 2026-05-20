@@ -2,5 +2,6 @@ namespace StayFinder.Services;
 
 public interface IFileUploadService
 {
-    // TODO: Add upload and file validation operations.
+    bool IsValidImage(IFormFile file, out string? validationError);
+    Task<string> UploadAccommodationImageAsync(IFormFile file, CancellationToken cancellationToken = default);
 }

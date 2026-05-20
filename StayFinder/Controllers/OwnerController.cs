@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using StayFinder.Extensions;
+using StayFinder.Models;
 using StayFinder.Services;
 
 namespace StayFinder.Controllers;
 
 public class OwnerController : Controller
 {
-    // TODO: Add owner dashboard and accommodation management actions.
-    //nastavak
-
     private readonly IAccommodationService _accommodationService;
     private readonly IReservationService _reservationService;
 
@@ -19,59 +18,64 @@ public class OwnerController : Controller
         _reservationService = reservationService;
     }
 
-    // =========================
-    // OWNER DASHBOARD (summary)
-    // =========================
     [HttpGet]
     public async Task<IActionResult> Dashboard()
     {
-        var role = HttpContext.Session.GetString("Role");
-        var ownerId = HttpContext.Session.GetString("UserId");
+        var ownerId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
+            return RedirectToAction("Login", "Account");
 
-        if (role != "Owner")
-            return Unauthorized("Only owners can access this endpoint.");
+        var ownerAccommodations = await _accommodationService.GetByOwnerIdAsync(ownerId);
 
-        var accommodations = await _accommodationService.GetAllAsync();
-
-        var ownerAccommodations = accommodations
-            .Where(a => a.OwnerId == ownerId)
-            .ToList();
-
-        return Ok(new
+        var reservationCount = 0;
+        foreach (var accommodation in ownerAccommodations)
         {
-            totalAccommodations = ownerAccommodations.Count,
-            accommodations = ownerAccommodations
-        });
+            var reservations = await _reservationService.GetByAccommodationIdAsync(accommodation.Id!);
+            reservationCount += reservations.Count;
+        }
+
+        var model = new OwnerDashboardViewModel
+        {
+            TotalAccommodations = ownerAccommodations.Count,
+            TotalReservations = reservationCount,
+            Accommodations = ownerAccommodations
+        };
+
+        return View(model);
     }
 
-    // =========================
-    // OWNER - GET THEIR RESERVATIONS
-    // =========================
     [HttpGet]
     public async Task<IActionResult> Reservations()
     {
-        var role = HttpContext.Session.GetString("Role");
-        var ownerId = HttpContext.Session.GetString("UserId");
+        var ownerId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
+            return RedirectToAction("Login", "Account");
 
-        if (role != "Owner")
-            return Unauthorized("Only owners allowed.");
+        var ownerAccommodations = await _accommodationService.GetByOwnerIdAsync(ownerId);
+        var ownerAccommodationIds = ownerAccommodations
+            .Where(a => !string.IsNullOrWhiteSpace(a.Id))
+            .Select(a => a.Id!)
+            .ToHashSet();
 
-        var accommodations = await _accommodationService.GetAllAsync();
-
-        var ownerAccommodationIds = accommodations
-            .Where(a => a.OwnerId == ownerId)
-            .Select(a => a.Id)
-            .ToList();
-
-        var allReservations = new List<object>();
+        var allReservations = new List<Reservation>();
 
         foreach (var accId in ownerAccommodationIds)
         {
-            var reservations = await _reservationService.GetByAccommodationIdAsync(accId!);
+            var reservations = await _reservationService.GetByAccommodationIdAsync(accId);
             allReservations.AddRange(reservations);
         }
 
-        return Ok(allReservations);
+        allReservations = allReservations
+            .OrderByDescending(r => r.CreatedAt)
+            .ToList();
+
+        return View(allReservations);
     }
 
+    public sealed class OwnerDashboardViewModel
+    {
+        public int TotalAccommodations { get; set; }
+        public int TotalReservations { get; set; }
+        public List<Accommodation> Accommodations { get; set; } = new();
+    }
 }
