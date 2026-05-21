@@ -137,23 +137,32 @@
                         </ul>
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade  show active" id="hotel" role="tabpanel" aria-labelledby="hotel-tab">
+								@{
+									var location = Context.Request.Query["location"].ToString();
+									var start = Context.Request.Query["start"].ToString();
+									var end = Context.Request.Query["end"].ToString();
+								}
                             <form class="form-wrap" method="get" action="/Accommodation">
                                 <input type="text"
-                                    id="searchLocation"
-                                    class="form-control"
-                                    name="location"
-                                    placeholder="Where?">									
-                                @* <input type="text" class="form-control" name="to" placeholder="To " onfocus="this.placeholder = ''" onblur="this.placeholder = 'To '"> *@
-                                <input type="text"
-                                    id="searchStart"
-                                    class="form-control date-picker"
-                                    name="start"
-                                    placeholder="Start">
-                                <input type="text"
-                                    id="searchReturn"
-                                    class="form-control date-picker"
-                                    name="end"
-                                    placeholder="Return">
+									id="searchLocation"
+									class="form-control"
+									name="location"
+									placeholder="Where?"
+									value="@location">
+
+								<input type="text"
+									id="searchStart"
+									class="form-control date-picker"
+									name="start"
+									placeholder="Start"
+									value="@start">
+
+								<input type="text"
+									id="searchReturn"
+									class="form-control date-picker"
+									name="end"
+									placeholder="Return"
+									value="@end">
 
 								
 
