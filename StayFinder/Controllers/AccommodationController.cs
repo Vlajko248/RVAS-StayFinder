@@ -18,11 +18,11 @@ public class AccommodationController : Controller
         _fileUploadService = fileUploadService;
     }
 
-    // Javni listing svih smestaja.
+    // Javni listing svih smestaja + opcioni filter po lokaciji.
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? location)
     {
-        var accommodations = await _accommodationService.GetAllAsync();
+        var accommodations = await _accommodationService.SearchByLocationAsync(location);
         return View(accommodations);
     }
 

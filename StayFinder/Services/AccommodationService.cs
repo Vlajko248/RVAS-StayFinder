@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using StayFinder.Data;
 using StayFinder.Models;
@@ -17,6 +18,21 @@ public sealed class AccommodationService : IAccommodationService
     {
         return await _accommodations
             .Find(_ => true)
+            .ToListAsync();
+    }
+
+    public async Task<List<Accommodation>> SearchByLocationAsync(string? location)
+    {
+        if (string.IsNullOrWhiteSpace(location))
+            return await GetAllAsync();
+
+        var normalizedLocation = location.Trim();
+        var filter = Builders<Accommodation>.Filter.Regex(
+            a => a.Location,
+            new BsonRegularExpression(normalizedLocation, "i"));
+
+        return await _accommodations
+            .Find(filter)
             .ToListAsync();
     }
 
