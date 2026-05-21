@@ -3,6 +3,7 @@ using StayFinder.Extensions;
 using StayFinder.Models;
 using StayFinder.Services;
 
+
 namespace StayFinder.Controllers;
 
 public class AccommodationController : Controller
@@ -11,14 +12,18 @@ public class AccommodationController : Controller
     private readonly IFileUploadService _fileUploadService;
     private readonly IReservationService _reservationService;
 
+    private readonly IReviewService _reviewService;
+
     public AccommodationController(
         IAccommodationService accommodationService,
         IFileUploadService fileUploadService,
-        IReservationService reservationService)
+        IReservationService reservationService,
+        IReviewService reviewService)
     {
         _accommodationService = accommodationService;
         _fileUploadService = fileUploadService;
         _reservationService = reservationService;
+        _reviewService = reviewService;
     }
 
     // Javni listing svih smestaja + opcioni filter po lokaciji i datumima.
@@ -63,6 +68,8 @@ public class AccommodationController : Controller
 
         if (accommodation == null)
             return NotFound();
+
+        ViewBag.Reviews = await _reviewService.GetByAccommodationIdAsync(id);
 
         return View(accommodation);
     }

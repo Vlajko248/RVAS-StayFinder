@@ -63,3 +63,26 @@ document.addEventListener("DOMContentLoaded", function () {
         checkbox.addEventListener("change", filterHotels);
     });
 });
+
+
+// Prenos datuma u details
+document.addEventListener("DOMContentLoaded", function () {
+    const hotelLinks = document.querySelectorAll(".hotel-details-link");
+
+    hotelLinks.forEach(link => {
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const start = document.getElementById("searchStart").value;
+            const end = document.getElementById("searchReturn").value;
+
+            let url = link.getAttribute("href");
+
+            if (start && end) {
+                url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+            }
+
+            window.location.href = url;
+        });
+    });
+});

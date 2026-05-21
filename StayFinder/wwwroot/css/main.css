@@ -4528,3 +4528,29 @@ body.mobile-nav-active #mobile-nav-toggle {
 .amenities-filter {
   text-align: left;
 }
+
+
+/* REVIEW */
+.rating-stars {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.rating-stars input {
+  display: none;
+}
+
+.rating-stars label {
+  font-size: 28px;
+  color: #ccc;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.rating-stars input:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+  color: #f8b600;
+}
