@@ -9,20 +9,49 @@ public class AccommodationController : Controller
 {
     private readonly IAccommodationService _accommodationService;
     private readonly IFileUploadService _fileUploadService;
+    private readonly IReservationService _reservationService;
 
     public AccommodationController(
         IAccommodationService accommodationService,
-        IFileUploadService fileUploadService)
+        IFileUploadService fileUploadService,
+        IReservationService reservationService)
     {
         _accommodationService = accommodationService;
         _fileUploadService = fileUploadService;
+        _reservationService = reservationService;
     }
 
-    // Javni listing svih smestaja + opcioni filter po lokaciji.
+    // Javni listing svih smestaja + opcioni filter po lokaciji i datumima.
     [HttpGet]
-    public async Task<IActionResult> Index(string? location)
+    public async Task<IActionResult> Index(string? location, string? start, string? end)
     {
         var accommodations = await _accommodationService.SearchByLocationAsync(location);
+
+        if (!string.IsNullOrWhiteSpace(start) &&
+            !string.IsNullOrWhiteSpace(end) &&
+            DateTime.TryParse(start, out var startDate) &&
+            DateTime.TryParse(end, out var endDate) &&
+            startDate < endDate)
+        {
+            var availableAccommodations = new List<Accommodation>();
+
+            foreach (var accommodation in accommodations)
+            {
+                if (string.IsNullOrWhiteSpace(accommodation.Id))
+                    continue;
+
+                var isAvailable = await _reservationService.IsAccommodationAvailableAsync(
+                    accommodation.Id,
+                    startDate,
+                    endDate);
+
+                if (isAvailable)
+                    availableAccommodations.Add(accommodation);
+            }
+
+            accommodations = availableAccommodations;
+        }
+
         return View(accommodations);
     }
 
