@@ -1,0 +1,64 @@
+@model IEnumerable<StayFinder.Models.Reservation>
+
+@{
+    Layout = null;
+    ViewData["Title"] = "My Reservations";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Reservations</title>
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/main.css" />
+</head>
+<body>
+    <div class="container" style="margin-top:40px;">
+        <h3 class="mb-4">My reservations</h3>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">Nemate nijednu rezervaciju.</div>
+            <a href="/Accommodation" class="primary-btn text-uppercase">Browse accommodations</a>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Accommodation</th>
+                            <th>Date from</th>
+                            <th>Date to</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var reservation in Model)
+                    {
+                        <tr>
+                            <td>@reservation.AccommodationId</td>
+                            <td>@reservation.DateFrom.ToString("dd.MM.yyyy")</td>
+                            <td>@reservation.DateTo.ToString("dd.MM.yyyy")</td>
+                            <td>$@reservation.TotalPrice</td>
+                            <td>@reservation.Status</td>
+                            <td>
+                                <form asp-controller="Reservation" asp-action="Delete" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@reservation.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</body>
+</html>

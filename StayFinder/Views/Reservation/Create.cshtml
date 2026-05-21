@@ -1,0 +1,46 @@
+@model StayFinder.Models.Reservation
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Create Reservation";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Reservation</title>
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/main.css" />
+</head>
+<body>
+    <div class="container" style="max-width: 640px; margin-top: 40px;">
+        <h3 class="mb-4">Reserve accommodation</h3>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" asp-validation-summary="All"></div>
+        }
+
+        <form method="post" asp-controller="Reservation" asp-action="Create">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="AccommodationId" />
+
+            <div class="form-group mb-3">
+                <label asp-for="DateFrom">Start date</label>
+                <input asp-for="DateFrom" class="form-control" type="date" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="DateTo">End date</label>
+                <input asp-for="DateTo" class="form-control" type="date" />
+            </div>
+
+            <button type="submit" class="primary-btn text-uppercase">Confirm reservation</button>
+            <a href="/Accommodation/Details/@Model.AccommodationId" class="btn btn-link">Back</a>
+        </form>
+    </div>
+</body>
+</html>

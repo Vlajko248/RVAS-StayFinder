@@ -1,0 +1,93 @@
+@model StayFinder.Models.User
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Sign up";
+}
+
+<!DOCTYPE html>
+<html lang="zxx" class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <title>Sign up</title>
+
+    <link rel="shortcut icon" href="~/img/fav.png">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/linearicons.css">
+    <link rel="stylesheet" href="~/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/css/bootstrap.css">
+    <link rel="stylesheet" href="~/css/main.css">
+</head>
+<body>
+    <header id="header">
+        <div class="header-top">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-sm-6 col-6 header-top-left">
+                        <ul>
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/Account/Login">Log in</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="about-banner relative">
+        <div class="overlay overlay-bg"></div>
+        <div class="container">
+            <div class="row d-flex align-items-center justify-content-center">
+                <div class="about-content col-lg-12">
+                    <h1 class="text-white">Sign up</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-gap">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-8">
+                    <div class="banner-right" style="padding:30px; background:#f9f9ff;">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" asp-validation-summary="All"></div>
+                        }
+
+                        <form method="post" asp-controller="Account" asp-action="Register" class="form-wrap">
+                            @Html.AntiForgeryToken()
+                            <input asp-for="FullName" class="form-control" placeholder="Full name" />
+                            <input asp-for="Email" class="form-control" placeholder="Email" required />
+                            <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Password" required />
+
+                            <div class="mt-3 mb-3">
+                                <label class="d-block">Register as:</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" asp-for="Role" value="Guest" checked="@(Model?.Role != "Owner")" />
+                                    <label class="form-check-label" for="Role">Guest</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" asp-for="Role" value="Owner" checked="@(Model?.Role == "Owner")" />
+                                    <label class="form-check-label" for="Role">Owner</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="primary-btn text-uppercase w-100">Create account</button>
+                        </form>
+
+                        <p class="mt-3 mb-0 text-center">
+                            Vec imas nalog? <a href="/Account/Login">Log in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="~/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/vendor/bootstrap.min.js"></script>
+</body>
+</html>

@@ -3,7 +3,6 @@ using StayFinder.Extensions;
 using StayFinder.Models;
 using StayFinder.Services;
 
-
 namespace StayFinder.Controllers;
 
 public class AccountController : Controller
@@ -21,7 +20,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Register()
     {
-        return View();
+        return View(new User { Role = "Guest" });
     }
 
     // =========================
@@ -33,6 +32,7 @@ public class AccountController : Controller
     {
         var email = user.Email?.Trim().ToLowerInvariant();
         var password = user.PasswordHash?.Trim();
+        var fullName = user.FullName?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
@@ -52,6 +52,13 @@ public class AccountController : Controller
             return View(user);
         }
 
+        if (!string.Equals(user.Role, "Owner", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(user.Role, "Guest", StringComparison.OrdinalIgnoreCase))
+        {
+            ModelState.AddModelError(nameof(user.Role), "Role must be Owner or Guest.");
+            return View(user);
+        }
+
         var existingUser = await _userService.GetByEmailAsync(email);
         if (existingUser != null)
         {
@@ -61,7 +68,10 @@ public class AccountController : Controller
 
         user.Email = email;
         user.PasswordHash = password;
-        user.Role = "Guest";
+        user.FullName = fullName;
+        user.Role = string.Equals(user.Role, "Owner", StringComparison.OrdinalIgnoreCase)
+            ? "Owner"
+            : "Guest";
 
         await _userService.CreateAsync(user);
         TempData["Message"] = "User registered successfully. Please login.";

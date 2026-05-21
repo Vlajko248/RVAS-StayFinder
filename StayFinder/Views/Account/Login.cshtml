@@ -1,0 +1,82 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Log in";
+}
+
+<!DOCTYPE html>
+<html lang="zxx" class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <title>Log in</title>
+
+    <link rel="shortcut icon" href="~/img/fav.png">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/linearicons.css">
+    <link rel="stylesheet" href="~/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/css/bootstrap.css">
+    <link rel="stylesheet" href="~/css/main.css">
+</head>
+<body>
+    <header id="header">
+        <div class="header-top">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-sm-6 col-6 header-top-left">
+                        <ul>
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/Account/Register">Sign up</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="about-banner relative">
+        <div class="overlay overlay-bg"></div>
+        <div class="container">
+            <div class="row d-flex align-items-center justify-content-center">
+                <div class="about-content col-lg-12">
+                    <h1 class="text-white">Log in</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-gap">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-8">
+                    <div class="banner-right" style="padding:30px; background:#f9f9ff;">
+                        @if (TempData["Message"] is string message)
+                        {
+                            <div class="alert alert-success">@message</div>
+                        }
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" asp-validation-summary="All"></div>
+                        }
+
+                        <form method="post" asp-controller="Account" asp-action="Login" class="form-wrap">
+                            @Html.AntiForgeryToken()
+                            <input type="email" name="email" class="form-control" placeholder="Email" required />
+                            <input type="password" name="password" class="form-control" placeholder="Password" required />
+                            <button type="submit" class="primary-btn text-uppercase w-100">Log in</button>
+                        </form>
+
+                        <p class="mt-3 mb-0 text-center">
+                            Nemas nalog? <a href="/Account/Register">Sign up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="~/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/vendor/bootstrap.min.js"></script>
+</body>
+</html>
