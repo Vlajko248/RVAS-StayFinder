@@ -76,6 +76,17 @@ public class ReservationController : Controller
         if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
             return RedirectToAction("Login", "Account");
 
+        //dodato zbog datuma (datum rezervacije ne moze poceti u proslo vreme)
+
+        if(reservation.DateFrom.Date < DateTime.UtcNow.Date)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "Datum pocetka rezervacije ne moze biti u proslosti.");
+
+            return View(reservation);
+        }
+
         if (reservation.DateFrom >= reservation.DateTo)
         {
             ModelState.AddModelError(string.Empty, "Invalid date range.");
