@@ -1,4 +1,3 @@
-
 // Izlistavanje svih hotela
 document.addEventListener("DOMContentLoaded", function () {
     const hotelLinks = document.querySelectorAll(".hotel-details-link");
@@ -66,23 +65,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Prenos datuma u details
+// Ovaj deo sada menja query parametre bez dupliranja "?start..." u URL-u.
 document.addEventListener("DOMContentLoaded", function () {
-    const hotelLinks = document.querySelectorAll(".hotel-details-link");
+    const hotelLinks = document.querySelectorAll(".hotel-details-link, .price-btn");
 
     hotelLinks.forEach(link => {
         link.addEventListener("click", function (e) {
-            e.preventDefault();
+            const startInput = document.getElementById("searchStart");
+            const endInput = document.getElementById("searchReturn");
 
-            const start = document.getElementById("searchStart").value;
-            const end = document.getElementById("searchReturn").value;
-
-            let url = link.getAttribute("href");
-
-            if (start && end) {
-                url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+            if (!startInput || !endInput) {
+                return;
             }
 
-            window.location.href = url;
+            const start = startInput.value?.trim();
+            const end = endInput.value?.trim();
+
+            if (!start && !end) {
+                return;
+            }
+
+            e.preventDefault();
+
+            const href = link.getAttribute("href");
+            if (!href) return;
+
+            const url = new URL(href, window.location.origin);
+
+            if (start) {
+                url.searchParams.set("start", start);
+            }
+
+            if (end) {
+                url.searchParams.set("end", end);
+            }
+
+            window.location.href = url.toString();
         });
     });
 });

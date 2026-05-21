@@ -1,0 +1,151 @@
+@model StayFinder.Models.Accommodation
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Edit Accommodation";
+    var currentRole = Context.Session.GetString("Role");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Edit Accommodation</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/linearicons.css">
+    <link rel="stylesheet" href="~/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/css/bootstrap.css">
+    <link rel="stylesheet" href="~/css/main.css">
+</head>
+<body>
+    <header id="header">
+        <div class="header-top">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 col-sm-6 col-6 header-top-left">
+                        <ul>
+                            <li><span style="color:white;">@currentRole</span></li>
+                            <li>
+                                <form method="post" action="/Account/Logout" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" style="background:none;border:none;color:white;cursor:pointer;padding:0;">Sign out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container main-menu">
+            <div class="row align-items-center justify-content-between d-flex">
+                <div id="logo">
+                    <a href="/"><img src="~/img/logo.png" alt="" title="" /></a>
+                </div>
+                <nav id="nav-menu-container">
+                    <ul class="nav-menu">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/Owner/Dashboard">Dashboard</a></li>
+                        <li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="about-banner relative">
+        <div class="overlay overlay-bg"></div>
+        <div class="container">
+            <div class="row d-flex align-items-center justify-content-center">
+                <div class="about-content col-lg-12">
+                    <h1 class="text-white">Edit Accommodation</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-gap">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div style="padding:30px; background:#f9f9ff; border-radius:8px;">
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" asp-validation-summary="All"></div>
+                        }
+
+                        @if (Model.ImageUrls?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <label>Current image</label><br />
+                                <img src="@Model.ImageUrls.First()" style="max-height:150px;border-radius:4px;" />
+                            </div>
+                        }
+
+                        <form method="post" asp-controller="Accommodation" asp-action="Edit"
+                              asp-route-id="@Model.Id" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="Id" />
+
+                            <div class="form-group mb-3">
+                                <label>Name *</label>
+                                <input asp-for="Name" class="form-control" required />
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Location *</label>
+                                <input asp-for="Location" class="form-control" required />
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Price per night ($) *</label>
+                                <input asp-for="PricePerNight" type="number" min="1" step="0.01" class="form-control" required />
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Amenities (jedan po liniji)</label>
+                                <textarea id="amenitiesInput" class="form-control" rows="4">@string.Join("\n", Model.Amenities ?? new())</textarea>
+                                <small class="text-muted">Izmeni listu — svaki sadržaj u novi red.</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Upload new image (opciono)</label>
+                                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                            </div>
+
+                            <button type="submit" class="primary-btn text-uppercase">Update</button>
+                            <a href="/Accommodation/MyAccommodations" class="btn btn-link ml-2">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="~/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/vendor/bootstrap.min.js"></script>
+    <script>
+        document.querySelector("form").addEventListener("submit", function () {
+            const lines = document.getElementById("amenitiesInput").value
+                .split("\n")
+                .map(l => l.trim())
+                .filter(l => l.length > 0);
+
+            lines.forEach(function (val, i) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = `Amenities[${i}]`;
+                input.value = val;
+                document.querySelector("form").appendChild(input);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -2,23 +2,20 @@
 
 @{
     Layout = null;
-    ViewData["Title"] = "My Reservations";
+    ViewData["Title"] = "Reservations";
     var currentRole = Context.Session.GetString("Role");
 }
 
 <!DOCTYPE html>
-<html lang="zxx" class="no-js">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>My Reservations - StayFinder</title>
-    <link rel="shortcut icon" href="~/img/fav.png">
+    <title>Reservations</title>
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
     <link rel="stylesheet" href="~/css/linearicons.css">
     <link rel="stylesheet" href="~/css/font-awesome.min.css">
     <link rel="stylesheet" href="~/css/bootstrap.css">
-    <link rel="stylesheet" href="~/css/animate.min.css">
-    <link rel="stylesheet" href="~/css/owl.carousel.css">
     <link rel="stylesheet" href="~/css/main.css">
 </head>
 <body>
@@ -49,7 +46,9 @@
                     <ul class="nav-menu">
                         <li><a href="/">Home</a></li>
                         <li><a href="/Accommodation">Hotels</a></li>
-                        <li class="active"><a href="/Reservation/MyReservations"><strong>My Reservations</strong></a></li>
+                        <li><a href="/Owner/Dashboard">Dashboard</a></li>
+                        <li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+                        <li><a href="/Owner/Reservations"><strong>Reservations</strong></a></li>
                     </ul>
                 </nav>
             </div>
@@ -61,7 +60,7 @@
         <div class="container">
             <div class="row d-flex align-items-center justify-content-center">
                 <div class="about-content col-lg-12">
-                    <h1 class="text-white">My Reservations</h1>
+                    <h1 class="text-white">My reservations</h1>
                 </div>
             </div>
         </div>
@@ -69,16 +68,9 @@
 
     <section class="section-gap">
         <div class="container">
-
-            @if (TempData["Message"] != null)
-            {
-                <div class="alert alert-success">@TempData["Message"]</div>
-            }
-
             @if (!Model.Any())
             {
-                <div class="alert alert-info">Nemate nijednu rezervaciju.</div>
-                <a href="/Accommodation" class="primary-btn text-uppercase">Browse accommodations</a>
+                <div class="alert alert-info">Nema rezervacija za vaše smeštaje.</div>
             }
             else
             {
@@ -86,54 +78,41 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Accommodation</th>
+                                <th>Accommodation ID</th>
+                                <th>Guest ID</th>
                                 <th>Date from</th>
                                 <th>Date to</th>
                                 <th>Total</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <th>Created</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var reservation in Model)
+                            @foreach (var r in Model)
                             {
                                 <tr>
-                                    <td><a href="/Accommodation/Details/@reservation.AccommodationId">@reservation.AccommodationId</a></td>
-                                    <td>@reservation.DateFrom.ToString("dd.MM.yyyy")</td>
-                                    <td>@reservation.DateTo.ToString("dd.MM.yyyy")</td>
-                                    <td>$@reservation.TotalPrice</td>
+                                    <td><a href="/Accommodation/Details/@r.AccommodationId">@r.AccommodationId</a></td>
+                                    <td>@r.GuestId</td>
+                                    <td>@r.DateFrom.ToString("dd.MM.yyyy")</td>
+                                    <td>@r.DateTo.ToString("dd.MM.yyyy")</td>
+                                    <td>$@r.TotalPrice</td>
                                     <td>
-                                        @{
-                                            var badgeClass = reservation.Status switch
-                                            {
-                                                "Confirmed" => "badge badge-success",
-                                                "Cancelled" => "badge badge-danger",
-                                                _ => "badge badge-warning"
-                                            };
-                                        }
-                                        <span class="@badgeClass">@reservation.Status</span>
+                                        <span class="badge @(r.Status == "Confirmed" ? "badge-success" : "badge-secondary")">
+                                            @r.Status
+                                        </span>
                                     </td>
-                                    <td>
-                                        <form asp-controller="Reservation" asp-action="Delete" method="post" style="display:inline;"
-                                              onsubmit="return confirm('Otkazati ovu rezervaciju?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@reservation.Id" />
-                                            <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
-                                        </form>
-                                    </td>
+                                    <td>@r.CreatedAt.ToString("dd.MM.yyyy")</td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
             }
-
         </div>
     </section>
 
     <script src="~/js/vendor/jquery-2.2.4.min.js"></script>
     <script src="~/js/popper.min.js"></script>
     <script src="~/js/vendor/bootstrap.min.js"></script>
-    <script src="~/js/main.js"></script>
 </body>
 </html>

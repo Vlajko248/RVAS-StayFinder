@@ -238,12 +238,49 @@
                         var start = Context.Request.Query["start"].ToString();
                         var end = Context.Request.Query["end"].ToString();
 
-                        var startIso = DateTime.TryParse(start, out var parsedStart)
-                            ? parsedStart.ToString("yyyy-MM-dd")
-                            : string.Empty;
-                        var endIso = DateTime.TryParse(end, out var parsedEnd)
-                            ? parsedEnd.ToString("yyyy-MM-dd")
-                            : string.Empty;
+                        string NormalizeToIso(string? input)
+                        {
+                            if (string.IsNullOrWhiteSpace(input))
+                                return string.Empty;
+
+                            var formats = new[]
+                            {
+                                "yyyy-MM-dd",
+                                "MM/dd/yyyy",
+                                "M/d/yyyy",
+                                "dd.MM.yyyy",
+                                "d.M.yyyy"
+                            };
+
+                            if (DateTime.TryParseExact(
+                                    input,
+                                    formats,
+                                    System.Globalization.CultureInfo.InvariantCulture,
+                                    System.Globalization.DateTimeStyles.None,
+                                    out var parsedExact))
+                            {
+                                return parsedExact.ToString("yyyy-MM-dd");
+                            }
+
+                            if (DateTime.TryParse(
+                                    input,
+                                    System.Globalization.CultureInfo.GetCultureInfo("en-US"),
+                                    System.Globalization.DateTimeStyles.None,
+                                    out var parsedEn))
+                            {
+                                return parsedEn.ToString("yyyy-MM-dd");
+                            }
+
+                            if (DateTime.TryParse(input, out var parsedCurrent))
+                            {
+                                return parsedCurrent.ToString("yyyy-MM-dd");
+                            }
+
+                            return string.Empty;
+                        }
+
+                        var startIso = NormalizeToIso(start);
+                        var endIso = NormalizeToIso(end);
                     }
 
                     @if (string.IsNullOrWhiteSpace(currentUserId))

@@ -1,24 +1,22 @@
-@model IEnumerable<StayFinder.Models.Reservation>
+@using StayFinder.Controllers
+@model OwnerController.OwnerDashboardViewModel
 
 @{
     Layout = null;
-    ViewData["Title"] = "My Reservations";
+    ViewData["Title"] = "Owner Dashboard";
     var currentRole = Context.Session.GetString("Role");
 }
 
 <!DOCTYPE html>
-<html lang="zxx" class="no-js">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>My Reservations - StayFinder</title>
-    <link rel="shortcut icon" href="~/img/fav.png">
+    <title>Owner Dashboard</title>
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700" rel="stylesheet">
     <link rel="stylesheet" href="~/css/linearicons.css">
     <link rel="stylesheet" href="~/css/font-awesome.min.css">
     <link rel="stylesheet" href="~/css/bootstrap.css">
-    <link rel="stylesheet" href="~/css/animate.min.css">
-    <link rel="stylesheet" href="~/css/owl.carousel.css">
     <link rel="stylesheet" href="~/css/main.css">
 </head>
 <body>
@@ -49,7 +47,9 @@
                     <ul class="nav-menu">
                         <li><a href="/">Home</a></li>
                         <li><a href="/Accommodation">Hotels</a></li>
-                        <li class="active"><a href="/Reservation/MyReservations"><strong>My Reservations</strong></a></li>
+                        <li><a href="/Owner/Dashboard"><strong>Dashboard</strong></a></li>
+                        <li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+                        <li><a href="/Owner/Reservations">Reservations</a></li>
                     </ul>
                 </nav>
             </div>
@@ -61,7 +61,7 @@
         <div class="container">
             <div class="row d-flex align-items-center justify-content-center">
                 <div class="about-content col-lg-12">
-                    <h1 class="text-white">My Reservations</h1>
+                    <h1 class="text-white">Owner Dashboard</h1>
                 </div>
             </div>
         </div>
@@ -75,10 +75,29 @@
                 <div class="alert alert-success">@TempData["Message"]</div>
             }
 
-            @if (!Model.Any())
+            <div class="row mb-5">
+                <div class="col-md-4">
+                    <div class="card text-center p-4" style="border-radius:8px; background:#f9f9ff;">
+                        <h2 style="color:#f8b739;">@Model.TotalAccommodations</h2>
+                        <p class="mb-0">Total accommodations</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center p-4" style="border-radius:8px; background:#f9f9ff;">
+                        <h2 style="color:#f8b739;">@Model.TotalReservations</h2>
+                        <p class="mb-0">Total reservations</p>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-center justify-content-center">
+                    <a href="/Accommodation/Create" class="primary-btn text-uppercase">+ Add accommodation</a>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Your accommodations</h4>
+
+            @if (!Model.Accommodations.Any())
             {
-                <div class="alert alert-info">Nemate nijednu rezervaciju.</div>
-                <a href="/Accommodation" class="primary-btn text-uppercase">Browse accommodations</a>
+                <div class="alert alert-info">Nemate nijedan smeštaj. <a href="/Accommodation/Create">Dodajte prvi</a>.</div>
             }
             else
             {
@@ -86,39 +105,26 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Accommodation</th>
-                                <th>Date from</th>
-                                <th>Date to</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Price/night</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var reservation in Model)
+                            @foreach (var acc in Model.Accommodations)
                             {
                                 <tr>
-                                    <td><a href="/Accommodation/Details/@reservation.AccommodationId">@reservation.AccommodationId</a></td>
-                                    <td>@reservation.DateFrom.ToString("dd.MM.yyyy")</td>
-                                    <td>@reservation.DateTo.ToString("dd.MM.yyyy")</td>
-                                    <td>$@reservation.TotalPrice</td>
+                                    <td><a href="/Accommodation/Details/@acc.Id">@acc.Name</a></td>
+                                    <td>@acc.Location</td>
+                                    <td>$@acc.PricePerNight</td>
                                     <td>
-                                        @{
-                                            var badgeClass = reservation.Status switch
-                                            {
-                                                "Confirmed" => "badge badge-success",
-                                                "Cancelled" => "badge badge-danger",
-                                                _ => "badge badge-warning"
-                                            };
-                                        }
-                                        <span class="@badgeClass">@reservation.Status</span>
-                                    </td>
-                                    <td>
-                                        <form asp-controller="Reservation" asp-action="Delete" method="post" style="display:inline;"
-                                              onsubmit="return confirm('Otkazati ovu rezervaciju?');">
+                                        <a href="/Accommodation/Edit/@acc.Id" class="btn btn-sm btn-warning">Edit</a>
+                                        <form asp-controller="Accommodation" asp-action="Delete" method="post" style="display:inline;"
+                                              onsubmit="return confirm('Obrisati smeštaj @acc.Name?');">
                                             @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@reservation.Id" />
-                                            <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                                            <input type="hidden" name="id" value="@acc.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -127,13 +133,11 @@
                     </table>
                 </div>
             }
-
         </div>
     </section>
 
     <script src="~/js/vendor/jquery-2.2.4.min.js"></script>
     <script src="~/js/popper.min.js"></script>
     <script src="~/js/vendor/bootstrap.min.js"></script>
-    <script src="~/js/main.js"></script>
 </body>
 </html>
