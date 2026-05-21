@@ -4519,3 +4519,12 @@ body.mobile-nav-active #mobile-nav-toggle {
   padding: 40px 30px;
 }
 
+/* Accommodation */
+.amenities-filter label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.amenities-filter {
+  text-align: left;
+}

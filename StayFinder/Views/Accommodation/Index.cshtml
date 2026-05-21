@@ -4,7 +4,9 @@
 @{
     Layout = null;
     ViewData["Title"] = "Hotels";
+
 }
+
     
     
     <!DOCTYPE html>
@@ -13,7 +15,7 @@
 		<!-- Mobile Specific Meta -->
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<!-- Favicon-->
-		<link rel="shortcut icon" href="~/img/fav.png">
+		@* <link rel="shortcut icon" href="~/img/fav.png"> *@
 		<!-- Author Meta -->
 		<meta name="author" content="colorlib">
 		<!-- Meta Description -->
@@ -152,9 +154,37 @@
                                     class="form-control date-picker"
                                     name="end"
                                     placeholder="Return">
+
+								
+
                                 @* <input type="number" min="1" max="20" class="form-control" name="adults" placeholder="Adults " onfocus="this.placeholder = ''" onblur="this.placeholder = 'Adults '"> *@
                                 @* <input type="number" min="1" max="20" class="form-control" name="child" placeholder="Child " onfocus="this.placeholder = ''" onblur="this.placeholder = 'Child '">						 *@
-                                <button type="submit" class="primary-btn text-uppercase w-100">Search Hotels</button>									
+                                <button type="submit" class="primary-btn text-uppercase w-100">Search Hotels</button>
+
+
+								<div class="amenities-filter">
+									<h5 style="margin-bottom: 10px; margin-top: 40px;">Filter by amenities</h5>
+
+									<label>
+										<input type="checkbox" class="amenity-filter" value="wifi">
+										Wi-fi
+									</label>
+
+									<label>
+										<input type="checkbox" class="amenity-filter" value="air-condition">
+										Air Condition
+									</label>
+
+									<label>
+										<input type="checkbox" class="amenity-filter" value="swimming-pool">
+										Swimming pool
+									</label>
+
+									<label>
+										<input type="checkbox" class="amenity-filter" value="restaurant">
+										Restaurant
+									</label>
+								</div>									
                             </form>							  	
                             </div>
                         </div>
@@ -476,72 +506,78 @@
 						</div>																														
 					</div> *@
 
-                    <div class="row">
-                        @foreach (var hotel in Model)
-                        {
-                            var imageUrl = hotel.ImageUrls != null && hotel.ImageUrls.Any()
-                                ? hotel.ImageUrls.First()
-                                : "/img/hotels/d1.jpg";
+						<div class="row">
+									@foreach (var hotel in Model)
+									{
+										var imageUrl = hotel.ImageUrls != null && hotel.ImageUrls.Any()
+											? hotel.ImageUrls.First()
+											: "/img/hotels/d1.jpg";
 
-                            <div class="col-lg-4">
-                                <div class="single-destinations">
-                                    <div class="thumb">
-                                        <img src="@imageUrl" alt="@hotel.Name">
-                                    </div>
+										var amenities = hotel.Amenities != null
+											? string.Join(" ", hotel.Amenities.Select(a => a.ToLower()
+												.Replace(" ", "-")
+												.Replace("wi-fi", "wifi")
+												.Replace("wifi", "wifi")
+												.Replace("klima", "air-condition")))
+											: "";
 
-                                    <div class="details">
-                                        <h4 class="d-flex justify-content-between">
-                                            <a href="/Accommodation/Details/@hotel.Id" class="hotel-details-link">
-                                                @hotel.Name
-                                            </a>
+													<div class="col-lg-4 hotel-card" data-amenities="@amenities">
+														<div class="single-destinations">
+															<div class="thumb">
+																<img src="@imageUrl" alt="@hotel.Name">
+															</div>
 
-                                            <div class="star">
-                                                <span class="fa fa-star checked"></span>
-                                                <span class="fa fa-star checked"></span>
-                                                <span class="fa fa-star checked"></span>
-                                                <span class="fa fa-star checked"></span>
-                                                <span class="fa fa-star"></span>
-                                            </div>
-                                        </h4>
+															<div class="details">
+																<h4 class="d-flex justify-content-between">
+																	<a href="/Accommodation/Details/@hotel.Id" class="hotel-details-link">
+																		@hotel.Name
+																	</a>
 
-                                        <p>@hotel.Location</p>
+																	<div class="star">
+																		<span class="fa fa-star checked"></span>
+																		<span class="fa fa-star checked"></span>
+																		<span class="fa fa-star checked"></span>
+																		<span class="fa fa-star checked"></span>
+																		<span class="fa fa-star"></span>
+																	</div>
+																</h4>
 
-                                        <ul class="package-list">
-                                            <li class="d-flex justify-content-between align-items-center">
-                                                <span>Swimming pool</span>
-                                                <span>@(hotel.Amenities != null && hotel.Amenities.Contains("Swimming pool") ? "Yes" : "No")</span>
-                                            </li>
+																<p>@hotel.Location</p>
 
-                                            <li class="d-flex justify-content-between align-items-center">
-                                                <span>Wi-fi</span>
-                                                <span>@(hotel.Amenities != null && (hotel.Amenities.Contains("WiFi") || hotel.Amenities.Contains("Wi-fi")) ? "Yes" : "No")</span>
-                                            </li>
+																<ul class="package-list">
+																	<li class="d-flex justify-content-between align-items-center">
+																		<span>Swimming pool</span>
+																		<span>@(hotel.Amenities != null && hotel.Amenities.Contains("Swimming pool") ? "Yes" : "No")</span>
+																	</li>
 
-                                            <li class="d-flex justify-content-between align-items-center">
-                                                <span>Air Condition</span>
-                                                <span>@(hotel.Amenities != null && (hotel.Amenities.Contains("Klima") || hotel.Amenities.Contains("Air Condition")) ? "Yes" : "No")</span>
-                                            </li>
+																	<li class="d-flex justify-content-between align-items-center">
+																		<span>Wi-fi</span>
+																		<span>@(hotel.Amenities != null && (hotel.Amenities.Contains("WiFi") || hotel.Amenities.Contains("Wi-fi")) ? "Yes" : "No")</span>
+																	</li>
 
-                                            <li class="d-flex justify-content-between align-items-center">
-                                                <span>Restaurant</span>
-                                                <span>@(hotel.Amenities != null && hotel.Amenities.Contains("Restaurant") ? "Yes" : "No")</span>
-                                            </li>
+																	<li class="d-flex justify-content-between align-items-center">
+																		<span>Air Condition</span>
+																		<span>@(hotel.Amenities != null && (hotel.Amenities.Contains("Klima") || hotel.Amenities.Contains("Air Condition")) ? "Yes" : "No")</span>
+																	</li>
 
-                                            <li class="d-flex justify-content-between align-items-center">
-                                                <span>Price per night</span>
-                                                <a href="/Accommodation/Details/@hotel.Id" class="price-btn">
-                                                    $@hotel.PricePerNight
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
+																	<li class="d-flex justify-content-between align-items-center">
+																		<span>Restaurant</span>
+																		<span>@(hotel.Amenities != null && hotel.Amenities.Contains("Restaurant") ? "Yes" : "No")</span>
+																	</li>
 
-
-				</div>	
+																	<li class="d-flex justify-content-between align-items-center">
+																		<span>Price per night</span>
+																		<a href="/Accommodation/Details/@hotel.Id" class="price-btn">
+																			$@hotel.PricePerNight
+																		</a>
+																	</li>
+																</ul>
+															</div>
+														</div>
+													</div>
+										}
+							</div>
+						</div>	
 			</section>
 			<!-- End destinations Area -->
 			
