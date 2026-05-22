@@ -1,0 +1,10 @@
+[33mce860db[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge branch 'main' of https://github.com/Vlajko248/RVAS-StayFinder into main
+[33m36db9be[m 123
+[33mf1df21c[m Slike Hotela
+[33mc30a981[m prosirio dataseed
+[33me891e26[m Vladimir > dodat filter po ceni, multi-upload slika sa primarnom, amenity checkboxovi, galerija slika na detaljima, otkazivanje rezervacija za ownera i human-readable imena umesto GUID-ova
+[33m7b9e30f[m Review dorada imena
+[33m762f760[m Osposobljeno ostavljanje reviews
+[33m8d2da2d[m Uredjena navigacija u hederu i futeru
+[33m8e5b73a[m Stevan--> resen problem sa pocetnim datumom rezervacije ne moze biti u proslosti
+[33mb4d819b[m Vladimir > ispravka navigacionih linkova i zamena naslova u StayFinder na svim stranicama

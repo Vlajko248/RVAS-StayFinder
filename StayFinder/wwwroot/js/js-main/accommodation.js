@@ -18,15 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     form.addEventListener("submit", function (e) {
 
-        const location =
-            document.getElementById("searchLocation").value.trim();
-
-        if (location.length < 2) {
-
-            e.preventDefault();
-
-            alert("Please enter a location.");
-        }
+        // Lokacija nije obavezna — ako je prazna, vraca sve smestaje
     });
 });
 

@@ -152,13 +152,13 @@
                                                         }
                                                     </div>
                                                     <input type="hidden" name="keepImages" id="keepImages" value="@string.Join(",", existingImages)" />
-                                                    <input type="hidden" name="primaryIndex" id="primaryIndex" value="0" />
+                                                                                    <input type="hidden" name="primaryUrl" id="primaryUrl" value="@existingImages.FirstOrDefault()" />
                                                 </div>
                                             }
                                             else
                                             {
                                                 <input type="hidden" name="keepImages" id="keepImages" value="" />
-                                                <input type="hidden" name="primaryIndex" id="primaryIndex" value="0" />
+                                                                                <input type="hidden" name="primaryUrl" id="primaryUrl" value="" />
                                             }
 
                                             <div class="form-group mb-3">
@@ -198,30 +198,20 @@
 
         // Upravljanje postojecim slikama — uklanjanje i postavljanje primarne
         const keepInput = document.getElementById("keepImages");
-        const primaryIndexInput = document.getElementById("primaryIndex");
+        const primaryUrlInput = document.getElementById("primaryUrl");
 
         function getKeptUrls() {
             return (keepInput.value || "").split(",").map(u => u.trim()).filter(u => u.length > 0);
         }
 
-        function updatePrimaryIndex() {
-            // Primarna je ona koja ima highlight border
-            const wrappers = document.querySelectorAll(".existing-img-wrapper");
-            let idx = 0;
-            wrappers.forEach(function (w, i) {
-                if (w.querySelector("img").style.border.includes("f8b739")) idx = i;
-            });
-            primaryIndexInput.value = idx;
-        }
-
-        document.querySelectorAll(".existing-img-wrapper").forEach(function (wrapper, idx) {
-            // Klik na sliku = primarna
+        document.querySelectorAll(".existing-img-wrapper").forEach(function (wrapper) {
+            // Klik na sliku = postavi kao primarnu (cuvamo URL, ne indeks)
             wrapper.querySelector(".existing-img").addEventListener("click", function () {
                 document.querySelectorAll(".existing-img").forEach(i => i.style.border = "3px solid transparent");
                 document.querySelectorAll(".primary-badge").forEach(s => s.style.display = "none");
                 this.style.border = "3px solid #f8b739";
                 wrapper.querySelector(".primary-badge").style.display = "block";
-                updatePrimaryIndex();
+                primaryUrlInput.value = wrapper.dataset.url;
             });
 
             // X dugme = ukloni sliku
@@ -229,14 +219,31 @@
                 const url = wrapper.dataset.url;
                 const kept = getKeptUrls().filter(u => u !== url);
                 keepInput.value = kept.join(",");
+                // Ako je uklonjena primarna, resetuj na prvu preostalu
+                if (primaryUrlInput.value === url) {
+                    primaryUrlInput.value = kept.length > 0 ? kept[0] : "";
+                }
                 wrapper.remove();
-                // Reset primary na prvu preostalu
+                // Vizuelno oznaci novu primarnu
                 const remaining = document.querySelectorAll(".existing-img-wrapper");
                 if (remaining.length > 0) {
                     remaining[0].querySelector(".existing-img").style.border = "3px solid #f8b739";
                     remaining[0].querySelector(".primary-badge").style.display = "block";
                 }
-                updatePrimaryIndex();
+            });
+        });
+
+        // Checkboxes -> hidden Amenities inputi pre submit-a
+        document.querySelector("form").addEventListener("submit", function () {
+            // Ukloni stare Amenities hidden inpute ako ih ima (resubmit zaštita)
+            document.querySelectorAll("input[name^='Amenities']").forEach(el => el.remove());
+            const checked = document.querySelectorAll(".amenity-cb:checked");
+            checked.forEach(function (cb, i) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = `Amenities[${i}]`;
+                input.value = cb.value;
+                document.querySelector("form").appendChild(input);
             });
         });
 

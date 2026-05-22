@@ -177,7 +177,7 @@ public class AccommodationController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(string id, Accommodation accommodation, IList<IFormFile>? imageFiles, int primaryIndex = 0, string? keepImages = null)
+    public async Task<IActionResult> Edit(string id, Accommodation accommodation, IList<IFormFile>? imageFiles, string? primaryUrl = null, string? keepImages = null)
     {
         var ownerId = HttpContext.GetCurrentUserId();
         if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
@@ -208,12 +208,11 @@ public class AccommodationController : Controller
                     retained.Add(await _fileUploadService.UploadAccommodationImageAsync(file));
             }
 
-            // Primarna slika ide na index 0
-            if (primaryIndex >= 0 && primaryIndex < retained.Count)
+            // Primarna slika ide na index 0 — koristimo URL umesto indeksa da izbegnemo browser normalizaciju boja
+            if (!string.IsNullOrWhiteSpace(primaryUrl) && retained.Contains(primaryUrl))
             {
-                var primary = retained[primaryIndex];
-                retained.RemoveAt(primaryIndex);
-                retained.Insert(0, primary);
+                retained.Remove(primaryUrl);
+                retained.Insert(0, primaryUrl);
             }
 
             accommodation.ImageUrls = retained;
