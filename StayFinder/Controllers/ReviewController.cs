@@ -77,10 +77,6 @@ public class ReviewController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(string accommodationId, int rating, string comment)
     {
-        Console.WriteLine("=== REVIEW CREATE HIT ===");
-        Console.WriteLine($"AccommodationId: {accommodationId}");
-        Console.WriteLine($"Rating: {rating}");
-        Console.WriteLine($"Comment: {comment}");
 
         var guestId = HttpContext.Session.GetString("UserId");
         var role = HttpContext.Session.GetString("Role");
@@ -101,9 +97,6 @@ public class ReviewController : Controller
         try
         {
             await _reviewService.CreateAsync(review);
-
-            var testReviews = await _reviewService.GetByAccommodationIdAsync(accommodationId);
-            Console.WriteLine("AFTER CREATE REVIEWS COUNT: " + testReviews.Count);
         }
         catch (Exception ex)
         {

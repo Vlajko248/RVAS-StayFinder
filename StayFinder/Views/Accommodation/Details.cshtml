@@ -6,7 +6,14 @@
 
     var currentUserId = Context.Session.GetString("UserId");
     var currentRole = Context.Session.GetString("Role");
+
+    var users = ViewBag.Users as List<User>;
+
+
+
 }
+
+
 
 <!DOCTYPE html>
 <html lang="zxx" class="no-js">
@@ -42,6 +49,7 @@
 </head>
 <body>
     <header id="header">
+
         <div class="header-top">
             <div class="container">
                 <div class="row align-items-center">
@@ -322,260 +330,113 @@
 
 
 
-                    <!-- start comments -->
-<div class="comments-area">
+                                                    <!-- start comments -->
+                                <div class="comments-area">
 
-    <h4>Reviews</h4>
+                                    <h4>Reviews</h4>
 
-    @if (ViewBag.Reviews != null && ViewBag.Reviews.Count > 0)
-    {
-        @foreach (var review in ViewBag.Reviews)
-        {
-            <div class="comment-list">
-                <div class="single-comment justify-content-between d-flex">
-                    <div class="user justify-content-between d-flex">
-
-                        <div class="thumb">
-                            <img src="~/img/blog/c1.jpg" alt="">
-                        </div>
-
-                        <div class="desc">
-                            <h5><a href="#">Guest Review</a></h5>
-
-                            <p class="date">
-                                @review.CreatedAt.ToString("dd MMM yyyy")
-                            </p>
-
-                            <div class="mb-2">
-                                @for (int i = 0; i < review.Rating; i++)
-                                {
-                                    <span class="fa fa-star checked"></span>
-                                }
-
-                                @for (int i = review.Rating; i < 5; i++)
-                                {
-                                    <span class="fa fa-star"></span>
-                                }
-                            </div>
-
-                            <p class="comment">
-                                @review.Comment
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        }
-    }
-    else
-    {
-        <p>No reviews yet.</p>
-    }
-
-</div>
-<!-- end comments -->
-
-
-@if (currentRole == "Guest" && !string.IsNullOrWhiteSpace(currentUserId))
-{
-    <div class="comment-form">
-        <h4>Leave a Review</h4>
-
-        <form action="/Review/Create" method="post">
-            @Html.AntiForgeryToken()
-
-            <input type="hidden" name="accommodationId" value="@Model.Id" />
-
-            <div class="form-group">
-                <label>Rating</label>
-
-                <select name="rating" class="form-control" required>
-                    <option value="">Choose rating</option>
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Very good</option>
-                    <option value="3">3 - Good</option>
-                    <option value="2">2 - Bad</option>
-                    <option value="1">1 - Very bad</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <textarea class="form-control mb-10"
-                          rows="5"
-                          name="comment"
-                          placeholder="Write your review..."
-                          required></textarea>
-            </div>
-
-            <button type="submit" class="primary-btn text-uppercase">
-                Post Review
-            </button>
-        </form>
-    </div>
-}
-else
-{
-    <div class="comment-form">
-        <h4>Leave a Review</h4>
-        <p>You must be logged in as a guest to leave a review.</p>
-    </div>
-}
-
-
-                            @* <div class="comments-area">
-<p>Hotel ID: @Model.Id</p>
-<p>Reviews loaded: @(ViewBag.Reviews != null ? ViewBag.Reviews.Count : 0)</p>
-                                <h4>Reviews</h4>
-
-                                @if (ViewBag.Reviews != null)
-                                {
-                                    
-                                    @foreach (var review in ViewBag.Reviews)
+                                    @if (ViewBag.Reviews != null && ViewBag.Reviews.Count > 0)
                                     {
-                                        <div class="comment-list">
+                                        @foreach (var review in ViewBag.Reviews)
+                                        {
+                                            <div class="comment-list">
+                                                <div class="single-comment justify-content-between d-flex">
+                                                    <div class="user justify-content-between d-flex">
 
-                                            <div class="single-comment justify-content-between d-flex">
+                                                        <div class="thumb">
+                                                            <img src="~/img/blog/c1.jpg" alt="">
+                                                        </div>
 
-                                                <div class="user justify-content-between d-flex">
-
-                                                    <div class="thumb">
-                                                        <img src="~/img/blog/c1.jpg" alt="">
-                                                    </div>
-
-                                                    <div class="desc">
-
-                                                        <h5>
+                                                        <div class="desc">
+                                                            <h5>
                                                             <a href="#">
-                                                                Guest Review
+                                                                
+                                                                @(users?.FirstOrDefault(u => u.Id == review.GuestId)?.FullName ?? "Guest")
                                                             </a>
                                                         </h5>
 
-                                                        <p class="date">
-                                                            @review.CreatedAt.ToString("dd MMM yyyy")
-                                                        </p>
+                                                            <p class="date">
+                                                                @review.CreatedAt.ToString("dd MMM yyyy")
+                                                            </p>
 
-                                                        <div class="mb-2">
+                                                            <div class="mb-2">
+                                                                @for (int i = 0; i < review.Rating; i++)
+                                                                {
+                                                                    <span class="fa fa-star checked"></span>
+                                                                }
 
-                                                            @for (int i = 0; i < review.Rating; i++)
-                                                            {
-                                                                <span class="fa fa-star checked"></span>
-                                                            }
+                                                                @for (int i = review.Rating; i < 5; i++)
+                                                                {
+                                                                    <span class="fa fa-star"></span>
+                                                                }
+                                                            </div>
 
-                                                            @for (int i = review.Rating; i < 5; i++)
-                                                            {
-                                                                <span class="fa fa-star"></span>
-                                                            }
-
+                                                            <p class="comment">
+                                                                @review.Comment
+                                                            </p>
                                                         </div>
 
-                                                        <p class="comment">
-                                                            @review.Comment
-                                                        </p>
-
                                                     </div>
-
                                                 </div>
-
                                             </div>
-
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <p>No reviews yet.</p>
-                                }
-
-                            </div> *@
-
-							
-
-
-
-
-                            @* @if (User.IsInRole("Guest"))
-                                    {
-                                        <div class="comment-form">
-
-                                            <h4>Leave a Review</h4>
-
-                                            <form asp-controller="Review"
-                                                asp-action="Create"
-                                                method="post">
-
-                                                @Html.AntiForgeryToken()
-
-                                                <input type="hidden"
-                                                    name="accommodationId"
-                                                    value="@Model.Id" />
-
-                                                <div class="form-group">
-
-                                                    <label class="mb-2">Rating</label>
-
-                                                    <div class="rating-stars">
-
-                                                        <input type="radio" id="star5" name="rating" value="5" required>
-                                                        <label for="star5">
-                                                            <i class="fa fa-star"></i>
-                                                        </label>
-
-                                                        <input type="radio" id="star4" name="rating" value="4">
-                                                        <label for="star4">
-                                                            <i class="fa fa-star"></i>
-                                                        </label>
-
-                                                        <input type="radio" id="star3" name="rating" value="3">
-                                                        <label for="star3">
-                                                            <i class="fa fa-star"></i>
-                                                        </label>
-
-                                                        <input type="radio" id="star2" name="rating" value="2">
-                                                        <label for="star2">
-                                                            <i class="fa fa-star"></i>
-                                                        </label>
-
-                                                        <input type="radio" id="star1" name="rating" value="1">
-                                                        <label for="star1">
-                                                            <i class="fa fa-star"></i>
-                                                        </label>
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="form-group">
-
-                                                    <textarea class="form-control mb-10"
-                                                            rows="5"
-                                                            name="comment"
-                                                            placeholder="Write your review..."
-                                                            required></textarea>
-
-                                                </div>
-
-                                                <button type="submit"
-                                                        class="primary-btn text-uppercase">
-                                                    Post Review
-                                                </button>
-
-                                            </form>
-
-                                        </div>
+                                        }
                                     }
                                     else
                                     {
-                                        <div class="comment-form">
+                                        <p>No reviews yet.</p>
+                                    }
 
-                                            <h4>Leave a Review</h4>
+                                </div>
+                                <!-- end comments -->
 
-                                            <p>
-                                                You must be logged in as a guest to leave a review.
-                                            </p>
 
-                                        </div>
-                                    } *@
+                                @if (currentRole == "Guest" && !string.IsNullOrWhiteSpace(currentUserId))
+                                {
+                                    <div class="comment-form">
+                                        <h4>Leave a Review</h4>
+
+                                        <form action="/Review/Create" method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden" name="accommodationId" value="@Model.Id" />
+
+                                            <div class="form-group">
+                                                <label>Rating</label>
+
+                                                <select name="rating" class="form-control" required>
+                                                    <option value="">Choose rating</option>
+                                                    <option value="5">5 - Excellent</option>
+                                                    <option value="4">4 - Very good</option>
+                                                    <option value="3">3 - Good</option>
+                                                    <option value="2">2 - Bad</option>
+                                                    <option value="1">1 - Very bad</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <textarea class="form-control mb-10"
+                                                        rows="5"
+                                                        name="comment"
+                                                        placeholder="Write your review..."
+                                                        required></textarea>
+                                            </div>
+
+                                            <button type="submit" class="primary-btn text-uppercase">
+                                                Post Review
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="comment-form">
+                                        <h4>Leave a Review</h4>
+                                        <p>You must be logged in as a guest to leave a review.</p>
+                                    </div>
+                                }
+
+
+                            
 
 
                             
