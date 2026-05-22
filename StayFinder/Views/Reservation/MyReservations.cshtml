@@ -48,8 +48,17 @@
                 <nav id="nav-menu-container">
                     <ul class="nav-menu">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/Accommodation">Hotels</a></li>
-                        <li class="active"><a href="/Reservation/MyReservations"><strong>My Reservations</strong></a></li>
+                        <li><a href="/Accommodation">Accommodations</a></li>
+                        @if (string.Equals(currentRole, "Guest", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li><a href="/Reservation/MyReservations">My Reservations</a></li>
+                        }
+                        @if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li><a href="/Owner/Dashboard">Dashboard</a></li>
+                            <li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+                        }
+                        <li><a href="/Home/Privacy">Privacy</a></li>
                     </ul>
                 </nav>
             </div>

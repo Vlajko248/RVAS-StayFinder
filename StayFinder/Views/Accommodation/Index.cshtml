@@ -82,9 +82,19 @@
 				      </div>
 				      <nav id="nav-menu-container">
 						<ul class="nav-menu">
-					  <li><a href="/">Home</a></li>
-					  <li class="active"><a href="/Accommodation">Hotels</a></li>
-					</ul>
+							<li><a href="/">Home</a></li>
+							<li><a href="/Accommodation">Accommodations</a></li>
+							@if (string.Equals(currentRole, "Guest", StringComparison.OrdinalIgnoreCase))
+							{
+								<li><a href="/Reservation/MyReservations">My Reservations</a></li>
+							}
+							@if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase))
+							{
+								<li><a href="/Owner/Dashboard">Dashboard</a></li>
+								<li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+							}
+							<li><a href="/Home/Privacy">Privacy</a></li>
+						</ul>
 				      </nav><!-- #nav-menu-container -->					      		  
 					</div>
 				</div>
@@ -97,9 +107,9 @@
 					<div class="row d-flex align-items-center justify-content-center">
 						<div class="about-content col-lg-12">
 							<h1 class="text-white">
-								Hotels				
+								Accommodations				
 							</h1>	
-							<p class="text-white link-nav"><a href="/">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="/Accommodation"> Hotels</a></p>
+							<p class="text-white link-nav"><a href="/">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="/Accommodation"> Accommodations</a></p>
 						</div>	
 					</div>
 				</div>
@@ -312,20 +322,20 @@
 								<div class="row">
 									<div class="col">
 										<ul>
-											<li><a href="#">Home</a></li>
-											<li><a href="#">Feature</a></li>
-											<li><a href="#">Services</a></li>
-											<li><a href="#">Portfolio</a></li>
+											<li><a href="/">Home</a></li>
+												<li><a href="/Accommodation">Accommodations</a></li>
+												@if (string.Equals(currentRole, "Guest", StringComparison.OrdinalIgnoreCase))
+												{
+													<li><a href="/Reservation/MyReservations">My Reservations</a></li>
+												}
+												@if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase))
+												{
+													<li><a href="/Owner/Dashboard">Dashboard</a></li>
+													<li><a href="/Accommodation/MyAccommodations">My Accommodations</a></li>
+												}
+												<li><a href="/Home/Privacy">Privacy</a></li>
 										</ul>
-									</div>
-									<div class="col">
-										<ul>
-											<li><a href="#">Team</a></li>
-											<li><a href="#">Pricing</a></li>
-											<li><a href="#">Blog</a></li>
-											<li><a href="#">Contact</a></li>
-										</ul>
-									</div>										
+									</div>									
 								</div>							
 							</div>
 						</div>							
