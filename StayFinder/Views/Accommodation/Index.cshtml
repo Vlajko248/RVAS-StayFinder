@@ -1,11 +1,12 @@
 @model IEnumerable<StayFinder.Models.Accommodation>
 
 @{
-    Layout = null;
-    ViewData["Title"] = "Hotels";
+	Layout = null;
+	ViewData["Title"] = "Hotels";
 
-    var currentUserId = Context.Session.GetString("UserId");
-    var currentRole = Context.Session.GetString("Role");
+	var currentUserId = Context.Session.GetString("UserId");
+	var currentRole = Context.Session.GetString("Role");
+	var currentFullName = Context.Session.GetString("FullName");
 }
 
 <!DOCTYPE html>
@@ -54,7 +55,7 @@
                             }
                             else
                             {
-                                <li><span style="color:white;">@currentRole</span></li>
+								<li><span style="color:white;">@currentRole — @currentFullName</span></li>
                                 <li>
                                     <form method="post" action="/Account/Logout" style="display:inline;">
                                         @Html.AntiForgeryToken()
@@ -139,65 +140,78 @@
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade  show active" id="hotel" role="tabpanel" aria-labelledby="hotel-tab">
 								@{
-									var location = Context.Request.Query["location"].ToString();
-									var start = Context.Request.Query["start"].ToString();
-									var end = Context.Request.Query["end"].ToString();
-								}
-                            <form class="form-wrap" method="get" action="/Accommodation">
-                                <input type="text"
-									id="searchLocation"
-									class="form-control"
-									name="location"
-									placeholder="Where?"
-									value="@location">
+											var location = Context.Request.Query["location"].ToString();
+											var start = Context.Request.Query["start"].ToString();
+											var end = Context.Request.Query["end"].ToString();
+											var minPrice = Context.Request.Query["minPrice"].ToString();
+											var maxPrice = Context.Request.Query["maxPrice"].ToString();
+										}
+									<form class="form-wrap" method="get" action="/Accommodation">
+										<input type="text"
+											id="searchLocation"
+											class="form-control"
+											name="location"
+											placeholder="Where?"
+											value="@location">
 
-								<input type="text"
-									id="searchStart"
-									class="form-control date-picker"
-									name="start"
-									placeholder="Start"
-									value="@start">
+										<input type="text"
+											id="searchStart"
+											class="form-control date-picker"
+											name="start"
+											placeholder="Start"
+											value="@start">
 
-								<input type="text"
-									id="searchReturn"
-									class="form-control date-picker"
-									name="end"
-									placeholder="Return"
-									value="@end">
+										<input type="text"
+											id="searchReturn"
+											class="form-control date-picker"
+											name="end"
+											placeholder="Return"
+											value="@end">
 
-								
+										<div style="display:flex; gap:8px; margin-top:8px;">
+											<input type="number"
+												class="form-control"
+												name="minPrice"
+												placeholder="Min price $"
+												min="0" step="1"
+												value="@minPrice">
+											<input type="number"
+												class="form-control"
+												name="maxPrice"
+												placeholder="Max price $"
+												min="0" step="1"
+												value="@maxPrice">
+										</div>
 
-                                @* <input type="number" min="1" max="20" class="form-control" name="adults" placeholder="Adults " onfocus="this.placeholder = ''" onblur="this.placeholder = 'Adults '"> *@
-                                @* <input type="number" min="1" max="20" class="form-control" name="child" placeholder="Child " onfocus="this.placeholder = ''" onblur="this.placeholder = 'Child '">						 *@
-                                <button type="submit" class="primary-btn text-uppercase w-100">Search Hotels</button>
+										<button type="submit" class="primary-btn text-uppercase w-100">Search Hotels</button>
 
 
-								<div class="amenities-filter">
-									<h5 style="margin-bottom: 10px; margin-top: 40px;">Filter by amenities</h5>
+										<div class="amenities-filter">
+											<h5 style="margin-bottom: 10px; margin-top: 40px;">Filter by amenities</h5>
 
-									<label>
-										<input type="checkbox" class="amenity-filter" value="wifi">
-										Wi-fi
-									</label>
+											<label>
+												<input type="checkbox" class="amenity-filter" value="wifi">
+												Wi-fi
+											</label>
 
-									<label>
-										<input type="checkbox" class="amenity-filter" value="air-condition">
-										Air Condition
-									</label>
+											<label>
+												<input type="checkbox" class="amenity-filter" value="air-condition">
+												Air Condition
+											</label>
 
-									<label>
-										<input type="checkbox" class="amenity-filter" value="swimming-pool">
-										Swimming pool
-									</label>
+											<label>
+												<input type="checkbox" class="amenity-filter" value="swimming-pool">
+												Swimming pool
+											</label>
 
-									<label>
-										<input type="checkbox" class="amenity-filter" value="restaurant">
-										Restaurant
-									</label>
-								</div>									
-                            </form>							  	
-                            </div>
-                        </div>
+											<label>
+												<input type="checkbox" class="amenity-filter" value="restaurant">
+												Restaurant
+											</label>
+										</div>									
+									</form>							  	
+									</div>
+								</div>
                     </div>
 			<!-- End banner Area -->
 

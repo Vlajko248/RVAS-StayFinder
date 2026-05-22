@@ -27,6 +27,21 @@ public class ReservationController : Controller
             return RedirectToAction("Login", "Account");
 
         var reservations = await _reservationService.GetByGuestIdAsync(userId);
+
+        // Smestaji za human-readable prikaz naziva umesto AccommodationId GUID-a
+        var accommodationIds = reservations
+            .Select(r => r.AccommodationId)
+            .Distinct()
+            .ToList();
+
+        var accommodations = new List<StayFinder.Models.Accommodation>();
+        foreach (var accId in accommodationIds)
+        {
+            var acc = await _accommodationService.GetByIdAsync(accId);
+            if (acc != null) accommodations.Add(acc);
+        }
+        ViewBag.Accommodations = accommodations;
+
         return View(reservations);
     }
 

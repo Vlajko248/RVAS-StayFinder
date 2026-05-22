@@ -4,6 +4,7 @@
     Layout = null;
     ViewData["Title"] = "Edit Accommodation";
     var currentRole = Context.Session.GetString("Role");
+    var currentFullName = Context.Session.GetString("FullName");
 }
 
 <!DOCTYPE html>
@@ -25,7 +26,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-sm-6 col-6 header-top-left">
                         <ul>
-                            <li><span style="color:white;">@currentRole</span></li>
+                            <li><span style="color:white;">@currentRole — @currentFullName</span></li>
                             <li>
                                 <form method="post" action="/Account/Logout" style="display:inline;">
                                     @Html.AntiForgeryToken()
@@ -71,57 +72,108 @@
                     <div style="padding:30px; background:#f9f9ff; border-radius:8px;">
 
                         @if (!ViewData.ModelState.IsValid)
-                        {
-                            <div class="alert alert-danger" asp-validation-summary="All"></div>
-                        }
+                                        {
+                                            <div class="alert alert-danger" asp-validation-summary="All"></div>
+                                        }
 
-                        @if (Model.ImageUrls?.Any() == true)
-                        {
-                            <div class="mb-3">
-                                <label>Current image</label><br />
-                                <img src="@Model.ImageUrls.First()" style="max-height:150px;border-radius:4px;" />
-                            </div>
-                        }
+                                        @{
+                                            var amenityOptions = new[] { "WiFi", "Air Condition", "Swimming pool", "Restaurant", "Parking", "Kitchen", "TV", "Gym" };
+                                            var existingAmenities = Model.Amenities ?? new List<string>();
+                                            var existingImages = Model.ImageUrls ?? new List<string>();
+                                        }
 
-                        <form method="post" asp-controller="Accommodation" asp-action="Edit"
-                              asp-route-id="@Model.Id" enctype="multipart/form-data">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" asp-for="Id" />
+                                        <form method="post" asp-controller="Accommodation" asp-action="Edit"
+                                              asp-route-id="@Model.Id" enctype="multipart/form-data">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" asp-for="Id" />
 
-                            <div class="form-group mb-3">
-                                <label>Name *</label>
-                                <input asp-for="Name" class="form-control" required />
-                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Name *</label>
+                                                <input asp-for="Name" class="form-control" required />
+                                            </div>
 
-                            <div class="form-group mb-3">
-                                <label>Location *</label>
-                                <input asp-for="Location" class="form-control" required />
-                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Location *</label>
+                                                <input asp-for="Location" class="form-control" required />
+                                            </div>
 
-                            <div class="form-group mb-3">
-                                <label>Description</label>
-                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Description</label>
+                                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                            </div>
 
-                            <div class="form-group mb-3">
-                                <label>Price per night ($) *</label>
-                                <input asp-for="PricePerNight" type="number" min="1" step="0.01" class="form-control" required />
-                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Price per night ($) *</label>
+                                                <input asp-for="PricePerNight" type="number" min="1" step="0.01" class="form-control" required />
+                                            </div>
 
-                            <div class="form-group mb-3">
-                                <label>Amenities (jedan po liniji)</label>
-                                <textarea id="amenitiesInput" class="form-control" rows="4">@string.Join("\n", Model.Amenities ?? new())</textarea>
-                                <small class="text-muted">Izmeni listu — svaki sadržaj u novi red.</small>
-                            </div>
+                                            <div class="form-group mb-3">
+                                                <label class="d-block mb-2">Amenities</label>
+                                                <div class="row">
+                                                    @foreach (var amenity in amenityOptions)
+                                                    {
+                                                        var isChecked = existingAmenities.Contains(amenity);
+                                                        <div class="col-6 col-md-4 mb-2">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input amenity-cb" type="checkbox" value="@amenity"
+                                                                       id="amenity_@amenity.Replace(" ", "_")"
+                                                                       @(isChecked ? "checked" : "")>
+                                                                <label class="form-check-label" for="amenity_@amenity.Replace(" ", "_")">@amenity</label>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
 
-                            <div class="form-group mb-3">
-                                <label>Upload new image (opciono)</label>
-                                <input type="file" name="imageFile" class="form-control" accept="image/*" />
-                            </div>
+                                            @if (existingImages.Any())
+                                            {
+                                                <div class="form-group mb-3">
+                                                    <label class="d-block mb-2">Trenutne slike <small class="text-muted">(klikni na sliku da je postaviš kao primarnu, X da je ukloniš)</small></label>
+                                                    <div id="existingImageContainer" class="d-flex flex-wrap" style="gap:8px;">
+                                                        @for (int i = 0; i < existingImages.Count; i++)
+                                                        {
+                                                            <div class="existing-img-wrapper" data-url="@existingImages[i]"
+                                                                 style="position:relative; cursor:pointer; margin:4px;">
+                                                                <img src="@existingImages[i]"
+                                                                     style="width:100px; height:80px; object-fit:cover; border-radius:4px; border:@(i == 0 ? "3px solid #f8b739" : "3px solid transparent");"
+                                                                     class="existing-img" />
+                                                                @if (i == 0)
+                                                                {
+                                                                    <span class="primary-badge" style="display:block; position:absolute; bottom:6px; left:0; right:0; text-align:center; background:rgba(248,183,57,0.9); color:#fff; font-size:11px; padding:1px 0;">Primary</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="primary-badge" style="display:none; position:absolute; bottom:6px; left:0; right:0; text-align:center; background:rgba(248,183,57,0.9); color:#fff; font-size:11px; padding:1px 0;">Primary</span>
+                                                                }
+                                                                <button type="button" class="remove-img-btn"
+                                                                        style="position:absolute; top:2px; right:2px; background:rgba(220,53,69,0.85); border:none; color:#fff; border-radius:50%; width:20px; height:20px; font-size:12px; line-height:1; cursor:pointer;"
+                                                                        title="Ukloni">×</button>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <input type="hidden" name="keepImages" id="keepImages" value="@string.Join(",", existingImages)" />
+                                                    <input type="hidden" name="primaryIndex" id="primaryIndex" value="0" />
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <input type="hidden" name="keepImages" id="keepImages" value="" />
+                                                <input type="hidden" name="primaryIndex" id="primaryIndex" value="0" />
+                                            }
 
-                            <button type="submit" class="primary-btn text-uppercase">Update</button>
-                            <a href="/Accommodation/MyAccommodations" class="btn btn-link ml-2">Cancel</a>
-                        </form>
+                                            <div class="form-group mb-3">
+                                                <label>Dodaj nove slike (opciono)</label>
+                                                <input type="file" name="imageFiles" id="imageFilesInput" class="form-control" accept="image/*" multiple />
+                                            </div>
+
+                                            <div id="newImagePreviewContainer" class="mb-3" style="display:none;">
+                                                <label class="d-block mb-2 text-muted">Preview novih slika</label>
+                                                <div id="newImagePreviews" class="d-flex flex-wrap" style="gap:8px;"></div>
+                                            </div>
+
+                                            <button type="submit" class="primary-btn text-uppercase">Update</button>
+                                            <a href="/Accommodation/MyAccommodations" class="btn btn-link ml-2">Cancel</a>
+                                        </form>
                     </div>
                 </div>
             </div>
@@ -132,18 +184,83 @@
     <script src="~/js/popper.min.js"></script>
     <script src="~/js/vendor/bootstrap.min.js"></script>
     <script>
+        // Checkboxes -> hidden Amenities inputi
         document.querySelector("form").addEventListener("submit", function () {
-            const lines = document.getElementById("amenitiesInput").value
-                .split("\n")
-                .map(l => l.trim())
-                .filter(l => l.length > 0);
-
-            lines.forEach(function (val, i) {
+            const checked = document.querySelectorAll(".amenity-cb:checked");
+            checked.forEach(function (cb, i) {
                 const input = document.createElement("input");
                 input.type = "hidden";
                 input.name = `Amenities[${i}]`;
-                input.value = val;
+                input.value = cb.value;
                 document.querySelector("form").appendChild(input);
+            });
+        });
+
+        // Upravljanje postojecim slikama — uklanjanje i postavljanje primarne
+        const keepInput = document.getElementById("keepImages");
+        const primaryIndexInput = document.getElementById("primaryIndex");
+
+        function getKeptUrls() {
+            return (keepInput.value || "").split(",").map(u => u.trim()).filter(u => u.length > 0);
+        }
+
+        function updatePrimaryIndex() {
+            // Primarna je ona koja ima highlight border
+            const wrappers = document.querySelectorAll(".existing-img-wrapper");
+            let idx = 0;
+            wrappers.forEach(function (w, i) {
+                if (w.querySelector("img").style.border.includes("f8b739")) idx = i;
+            });
+            primaryIndexInput.value = idx;
+        }
+
+        document.querySelectorAll(".existing-img-wrapper").forEach(function (wrapper, idx) {
+            // Klik na sliku = primarna
+            wrapper.querySelector(".existing-img").addEventListener("click", function () {
+                document.querySelectorAll(".existing-img").forEach(i => i.style.border = "3px solid transparent");
+                document.querySelectorAll(".primary-badge").forEach(s => s.style.display = "none");
+                this.style.border = "3px solid #f8b739";
+                wrapper.querySelector(".primary-badge").style.display = "block";
+                updatePrimaryIndex();
+            });
+
+            // X dugme = ukloni sliku
+            wrapper.querySelector(".remove-img-btn").addEventListener("click", function () {
+                const url = wrapper.dataset.url;
+                const kept = getKeptUrls().filter(u => u !== url);
+                keepInput.value = kept.join(",");
+                wrapper.remove();
+                // Reset primary na prvu preostalu
+                const remaining = document.querySelectorAll(".existing-img-wrapper");
+                if (remaining.length > 0) {
+                    remaining[0].querySelector(".existing-img").style.border = "3px solid #f8b739";
+                    remaining[0].querySelector(".primary-badge").style.display = "block";
+                }
+                updatePrimaryIndex();
+            });
+        });
+
+        // Preview novih slika (samo vizuelno)
+        const fileInput = document.getElementById("imageFilesInput");
+        const newContainer = document.getElementById("newImagePreviewContainer");
+        const newPreviews = document.getElementById("newImagePreviews");
+
+        fileInput.addEventListener("change", function () {
+            newPreviews.innerHTML = "";
+            if (!fileInput.files || fileInput.files.length === 0) {
+                newContainer.style.display = "none";
+                return;
+            }
+            newContainer.style.display = "block";
+            Array.from(fileInput.files).forEach(function (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.cssText = "width:100px; height:80px; object-fit:cover; border-radius:4px; margin:4px;";
+                    newPreviews.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             });
         });
     </script>

@@ -1,9 +1,13 @@
 @model IEnumerable<StayFinder.Models.Reservation>
+@using StayFinder.Models
 
 @{
     Layout = null;
     ViewData["Title"] = "My Reservations";
     var currentRole = Context.Session.GetString("Role");
+    var currentFullName = Context.Session.GetString("FullName");
+
+    var accommodations = ViewBag.Accommodations as List<Accommodation>;
 }
 
 <!DOCTYPE html>
@@ -28,7 +32,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-sm-6 col-6 header-top-left">
                         <ul>
-                            <li><span style="color:white;">@currentRole</span></li>
+                            <li><span style="color:white;">@currentRole — @currentFullName</span></li>
                             <li>
                                 <form method="post" action="/Account/Logout" style="display:inline;">
                                     @Html.AntiForgeryToken()
@@ -106,8 +110,9 @@
                         <tbody>
                             @foreach (var reservation in Model)
                             {
+                                var accName = accommodations?.FirstOrDefault(a => a.Id == reservation.AccommodationId)?.Name ?? reservation.AccommodationId;
                                 <tr>
-                                    <td><a href="/Accommodation/Details/@reservation.AccommodationId">@reservation.AccommodationId</a></td>
+                                    <td><a href="/Accommodation/Details/@reservation.AccommodationId">@accName</a></td>
                                     <td>@reservation.DateFrom.ToString("dd.MM.yyyy")</td>
                                     <td>@reservation.DateTo.ToString("dd.MM.yyyy")</td>
                                     <td>$@reservation.TotalPrice</td>

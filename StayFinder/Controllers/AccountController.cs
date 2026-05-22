@@ -109,9 +109,10 @@ public class AccountController : Controller
             return View();
         }
 
-        // SESSION LOGIN
+        // SESSION LOGIN — čuvamo i FullName za prikaz na frontu umesto GUID-a
         HttpContext.Session.SetString("UserId", user.Id!);
         HttpContext.Session.SetString("Role", user.Role);
+        HttpContext.Session.SetString("FullName", user.FullName);
 
         if (HttpContext.IsInRole("Owner"))
             return RedirectToAction("Dashboard", "Owner");

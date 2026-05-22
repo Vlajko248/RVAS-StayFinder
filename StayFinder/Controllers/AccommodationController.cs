@@ -11,24 +11,26 @@ public class AccommodationController : Controller
     private readonly IAccommodationService _accommodationService;
     private readonly IFileUploadService _fileUploadService;
     private readonly IReservationService _reservationService;
-
     private readonly IReviewService _reviewService;
+    private readonly IUserService _userService;
 
     public AccommodationController(
         IAccommodationService accommodationService,
         IFileUploadService fileUploadService,
         IReservationService reservationService,
-        IReviewService reviewService)
+        IReviewService reviewService,
+        IUserService userService)
     {
         _accommodationService = accommodationService;
         _fileUploadService = fileUploadService;
         _reservationService = reservationService;
         _reviewService = reviewService;
+        _userService = userService;
     }
 
-    // Javni listing svih smestaja + opcioni filter po lokaciji i datumima.
+    // Javni listing svih smestaja + opcioni filter po lokaciji, datumima i ceni.
     [HttpGet]
-    public async Task<IActionResult> Index(string? location, string? start, string? end)
+    public async Task<IActionResult> Index(string? location, string? start, string? end, decimal? minPrice, decimal? maxPrice)
     {
         var accommodations = await _accommodationService.SearchByLocationAsync(location);
 
@@ -57,10 +59,17 @@ public class AccommodationController : Controller
             accommodations = availableAccommodations;
         }
 
+        // Filter po ceni — ako je korisnik uneo min/max
+        if (minPrice.HasValue)
+            accommodations = accommodations.Where(a => a.PricePerNight >= minPrice.Value).ToList();
+
+        if (maxPrice.HasValue)
+            accommodations = accommodations.Where(a => a.PricePerNight <= maxPrice.Value).ToList();
+
         return View(accommodations);
     }
 
-    // Detalji jednog smestaja.
+    // Detalji jednog smestaja — sadrzi i listu zauzetih termina i korisnike za prikaz imena.
     [HttpGet]
     public async Task<IActionResult> Details(string id)
     {
@@ -70,11 +79,18 @@ public class AccommodationController : Controller
             return NotFound();
 
         var reviews = await _reviewService.GetByAccommodationIdAsync(id);
-
-        Console.WriteLine("DETAILS ID: " + id);
-        Console.WriteLine("REVIEWS COUNT: " + reviews.Count);
-
         ViewBag.Reviews = reviews;
+
+        // Zauzeti termini za prikaz na stranici detalja
+        var reservations = await _reservationService.GetByAccommodationIdAsync(id);
+        ViewBag.BookedPeriods = reservations
+            .Where(r => r.Status == "Active" && r.DateTo >= DateTime.UtcNow)
+            .OrderBy(r => r.DateFrom)
+            .ToList();
+
+        // Korisnici — za prikaz imena u reviewima umesto GUID-a
+        var allUsers = await _userService.GetAllAsync();
+        ViewBag.Users = allUsers;
 
         return View(accommodation);
     }
@@ -100,10 +116,10 @@ public class AccommodationController : Controller
         return View();
     }
 
-    // Kreiranje smestaja + opcioni upload jedne slike.
+    // Kreiranje smestaja — upload vise slika, prva u listi je primarna.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Accommodation accommodation, IFormFile? imageFile)
+    public async Task<IActionResult> Create(Accommodation accommodation, IList<IFormFile>? imageFiles, int primaryIndex = 0)
     {
         var ownerId = HttpContext.GetCurrentUserId();
         if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
@@ -112,12 +128,24 @@ public class AccommodationController : Controller
         try
         {
             accommodation.OwnerId = ownerId;
-            accommodation.ImageUrls ??= new List<string>();
+            accommodation.ImageUrls = new List<string>();
 
-            if (imageFile is not null)
+            if (imageFiles is { Count: > 0 })
             {
-                var imageUrl = await _fileUploadService.UploadAccommodationImageAsync(imageFile);
-                accommodation.ImageUrls.Add(imageUrl);
+                // Upload svih slika
+                var uploadedUrls = new List<string>();
+                foreach (var file in imageFiles)
+                    uploadedUrls.Add(await _fileUploadService.UploadAccommodationImageAsync(file));
+
+                // Primarna slika ide na index 0
+                if (primaryIndex >= 0 && primaryIndex < uploadedUrls.Count)
+                {
+                    var primary = uploadedUrls[primaryIndex];
+                    uploadedUrls.RemoveAt(primaryIndex);
+                    uploadedUrls.Insert(0, primary);
+                }
+
+                accommodation.ImageUrls = uploadedUrls;
             }
 
             await _accommodationService.CreateAsync(accommodation);
@@ -149,7 +177,7 @@ public class AccommodationController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(string id, Accommodation accommodation, IFormFile? imageFile)
+    public async Task<IActionResult> Edit(string id, Accommodation accommodation, IList<IFormFile>? imageFiles, int primaryIndex = 0, string? keepImages = null)
     {
         var ownerId = HttpContext.GetCurrentUserId();
         if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
@@ -166,13 +194,29 @@ public class AccommodationController : Controller
         {
             accommodation.OwnerId = ownerId;
             accommodation.CreatedAt = existingAccommodation.CreatedAt;
-            accommodation.ImageUrls = existingAccommodation.ImageUrls ?? new List<string>();
 
-            if (imageFile is not null)
+            // keepImages je comma-separated lista URL-ova koje vlasnik zeli da zadrzi
+            var retained = keepImages?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(u => u.Trim())
+                .ToList() ?? existingAccommodation.ImageUrls ?? new List<string>();
+
+            // Upload novih slika i dodaj ih na kraj
+            if (imageFiles is { Count: > 0 })
             {
-                var imageUrl = await _fileUploadService.UploadAccommodationImageAsync(imageFile);
-                accommodation.ImageUrls.Add(imageUrl);
+                foreach (var file in imageFiles)
+                    retained.Add(await _fileUploadService.UploadAccommodationImageAsync(file));
             }
+
+            // Primarna slika ide na index 0
+            if (primaryIndex >= 0 && primaryIndex < retained.Count)
+            {
+                var primary = retained[primaryIndex];
+                retained.RemoveAt(primaryIndex);
+                retained.Insert(0, primary);
+            }
+
+            accommodation.ImageUrls = retained;
 
             await _accommodationService.UpdateAsync(id, accommodation);
             return RedirectToAction(nameof(MyAccommodations));

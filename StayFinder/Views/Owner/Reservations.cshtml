@@ -1,9 +1,14 @@
 @model IEnumerable<StayFinder.Models.Reservation>
+@using StayFinder.Models
 
 @{
     Layout = null;
     ViewData["Title"] = "Reservations";
     var currentRole = Context.Session.GetString("Role");
+    var currentFullName = Context.Session.GetString("FullName");
+
+    var users = ViewBag.Users as List<User>;
+    var accommodations = ViewBag.Accommodations as List<Accommodation>;
 }
 
 <!DOCTYPE html>
@@ -25,7 +30,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-sm-6 col-6 header-top-left">
                         <ul>
-                            <li><span style="color:white;">@currentRole</span></li>
+                            <li><span style="color:white;">@currentRole — @currentFullName</span></li>
                             <li>
                                 <form method="post" action="/Account/Logout" style="display:inline;">
                                     @Html.AntiForgeryToken()
@@ -78,21 +83,24 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Accommodation ID</th>
-                                <th>Guest ID</th>
+                                <th>Accommodation</th>
+                                <th>Guest</th>
                                 <th>Date from</th>
                                 <th>Date to</th>
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Created</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var r in Model)
                             {
+                                var accName = accommodations?.FirstOrDefault(a => a.Id == r.AccommodationId)?.Name ?? r.AccommodationId;
+                                var guestName = users?.FirstOrDefault(u => u.Id == r.GuestId)?.FullName ?? r.GuestId;
                                 <tr>
-                                    <td><a href="/Accommodation/Details/@r.AccommodationId">@r.AccommodationId</a></td>
-                                    <td>@r.GuestId</td>
+                                    <td><a href="/Accommodation/Details/@r.AccommodationId">@accName</a></td>
+                                    <td>@guestName</td>
                                     <td>@r.DateFrom.ToString("dd.MM.yyyy")</td>
                                     <td>@r.DateTo.ToString("dd.MM.yyyy")</td>
                                     <td>$@r.TotalPrice</td>
@@ -102,6 +110,21 @@
                                         </span>
                                     </td>
                                     <td>@r.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (r.Status == "Active")
+                                        {
+                                            <form asp-controller="Reservation" asp-action="Delete" method="post" style="display:inline;"
+                                                  onsubmit="return confirm('Otkazati rezervaciju gosta @guestName?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@r.Id" />
+                                                <button type="submit" class="btn btn-sm btn-danger">Otkaži</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>

@@ -5,6 +5,7 @@
     Layout = null;
     ViewData["Title"] = "Owner Dashboard";
     var currentRole = Context.Session.GetString("Role");
+    var currentFullName = Context.Session.GetString("FullName");
 }
 
 <!DOCTYPE html>
@@ -26,7 +27,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6 col-sm-6 col-6 header-top-left">
                         <ul>
-                            <li><span style="color:white;">@currentRole</span></li>
+                            <li><span style="color:white;">@currentRole — @currentFullName</span></li>
                             <li>
                                 <form method="post" action="/Account/Logout" style="display:inline;">
                                     @Html.AntiForgeryToken()

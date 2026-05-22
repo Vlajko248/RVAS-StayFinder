@@ -9,13 +9,16 @@ public class OwnerController : Controller
 {
     private readonly IAccommodationService _accommodationService;
     private readonly IReservationService _reservationService;
+    private readonly IUserService _userService;
 
     public OwnerController(
         IAccommodationService accommodationService,
-        IReservationService reservationService)
+        IReservationService reservationService,
+        IUserService userService)
     {
         _accommodationService = accommodationService;
         _reservationService = reservationService;
+        _userService = userService;
     }
 
     // Glavni owner dashboard sa osnovnom statistikom.
@@ -70,6 +73,11 @@ public class OwnerController : Controller
         allReservations = allReservations
             .OrderByDescending(r => r.CreatedAt)
             .ToList();
+
+        // Prosledjujemo korisnike i smestaje za human-readable prikaz na frontu
+        var allUsers = await _userService.GetAllAsync();
+        ViewBag.Users = allUsers;
+        ViewBag.Accommodations = ownerAccommodations;
 
         return View(allReservations);
     }
