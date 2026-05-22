@@ -59,8 +59,8 @@ public sealed class ReviewService : IReviewService
         if (await HasGuestReviewedAccommodationAsync(review.GuestId, review.AccommodationId))
             throw new InvalidOperationException("Guest already reviewed this accommodation.");
 
-        if (!await CanGuestReviewAccommodationAsync(review.GuestId, review.AccommodationId))
-            throw new InvalidOperationException("Guest can review only after completed stay.");
+        // if (!await CanGuestReviewAccommodationAsync(review.GuestId, review.AccommodationId))
+        //     throw new InvalidOperationException("Guest can review only after completed stay.");
 
         review.Id ??= Guid.NewGuid().ToString();
         review.Comment = review.Comment?.Trim() ?? string.Empty;

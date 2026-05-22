@@ -69,7 +69,12 @@ public class AccommodationController : Controller
         if (accommodation == null)
             return NotFound();
 
-        ViewBag.Reviews = await _reviewService.GetByAccommodationIdAsync(id);
+        var reviews = await _reviewService.GetByAccommodationIdAsync(id);
+
+        Console.WriteLine("DETAILS ID: " + id);
+        Console.WriteLine("REVIEWS COUNT: " + reviews.Count);
+
+        ViewBag.Reviews = reviews;
 
         return View(accommodation);
     }

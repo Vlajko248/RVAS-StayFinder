@@ -109,7 +109,7 @@
 					<h1 class="text-white">
 						Blog Details Page				
 					</h1>	
-					<p class="text-white link-nav"><a href="/">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="/Accommodation"> Hotels</a></p>
+					<p class="text-white link-nav"><a href="/">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href="/Accommodation"> Accommodations</a></p>
 				</div>	
 			</div>
 		</div>
@@ -319,7 +319,111 @@
 					<!-- start comments -->
                     @* #Reviews *@
 
-                            <div class="comments-area">
+
+
+
+                    <!-- start comments -->
+<div class="comments-area">
+
+    <h4>Reviews</h4>
+
+    @if (ViewBag.Reviews != null && ViewBag.Reviews.Count > 0)
+    {
+        @foreach (var review in ViewBag.Reviews)
+        {
+            <div class="comment-list">
+                <div class="single-comment justify-content-between d-flex">
+                    <div class="user justify-content-between d-flex">
+
+                        <div class="thumb">
+                            <img src="~/img/blog/c1.jpg" alt="">
+                        </div>
+
+                        <div class="desc">
+                            <h5><a href="#">Guest Review</a></h5>
+
+                            <p class="date">
+                                @review.CreatedAt.ToString("dd MMM yyyy")
+                            </p>
+
+                            <div class="mb-2">
+                                @for (int i = 0; i < review.Rating; i++)
+                                {
+                                    <span class="fa fa-star checked"></span>
+                                }
+
+                                @for (int i = review.Rating; i < 5; i++)
+                                {
+                                    <span class="fa fa-star"></span>
+                                }
+                            </div>
+
+                            <p class="comment">
+                                @review.Comment
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No reviews yet.</p>
+    }
+
+</div>
+<!-- end comments -->
+
+
+@if (currentRole == "Guest" && !string.IsNullOrWhiteSpace(currentUserId))
+{
+    <div class="comment-form">
+        <h4>Leave a Review</h4>
+
+        <form action="/Review/Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="accommodationId" value="@Model.Id" />
+
+            <div class="form-group">
+                <label>Rating</label>
+
+                <select name="rating" class="form-control" required>
+                    <option value="">Choose rating</option>
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Very good</option>
+                    <option value="3">3 - Good</option>
+                    <option value="2">2 - Bad</option>
+                    <option value="1">1 - Very bad</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <textarea class="form-control mb-10"
+                          rows="5"
+                          name="comment"
+                          placeholder="Write your review..."
+                          required></textarea>
+            </div>
+
+            <button type="submit" class="primary-btn text-uppercase">
+                Post Review
+            </button>
+        </form>
+    </div>
+}
+else
+{
+    <div class="comment-form">
+        <h4>Leave a Review</h4>
+        <p>You must be logged in as a guest to leave a review.</p>
+    </div>
+}
+
+
+                            @* <div class="comments-area">
 <p>Hotel ID: @Model.Id</p>
 <p>Reviews loaded: @(ViewBag.Reviews != null ? ViewBag.Reviews.Count : 0)</p>
                                 <h4>Reviews</h4>
@@ -383,14 +487,14 @@
                                     <p>No reviews yet.</p>
                                 }
 
-                            </div>
+                            </div> *@
 
 							
 
 
 
 
-                            @if (User.IsInRole("Guest"))
+                            @* @if (User.IsInRole("Guest"))
                                     {
                                         <div class="comment-form">
 
@@ -471,7 +575,7 @@
                                             </p>
 
                                         </div>
-                                    }
+                                    } *@
 
 
                             
