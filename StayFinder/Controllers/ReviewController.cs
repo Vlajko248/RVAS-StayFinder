@@ -29,79 +29,37 @@ public class ReviewController : Controller
     [HttpGet]
     public async Task<IActionResult> MyReviews()
     {
-        // var guestId = HttpContext.GetCurrentUserId();
-        // if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
-        //     return RedirectToAction("Login", "Account");
-        var guestId = HttpContext.Session.GetString("UserId");
-        var role = HttpContext.Session.GetString("Role");
-
-        if (role != "Guest" || string.IsNullOrWhiteSpace(guestId))
+        var guestId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
             return RedirectToAction("Login", "Account");
 
         var reviews = await _reviewService.GetByGuestIdAsync(guestId);
         return View(reviews);
     }
 
-    // // Recenzija moze samo ako su pravila iz servisa ispunjena.
-    // [HttpPost]
-    // [ValidateAntiForgeryToken]
-    // public async Task<IActionResult> Create(string accommodationId, int rating, string comment)
-    // {
-    //     var guestId = HttpContext.GetCurrentUserId();
-    //     if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
-    //         return RedirectToAction("Login", "Account");
-    
-
-    //     var review = new Review
-    //     {
-    //         AccommodationId = accommodationId,
-    //         GuestId = guestId,
-    //         Rating = rating,
-    //         Comment = comment
-    //     };
-
-    //     try
-    //     {
-    //         await _reviewService.CreateAsync(review);
-    //     }
-    //     catch (InvalidOperationException ex)
-    //     {
-    //         TempData["ReviewError"] = ex.Message;
-    //         return RedirectToAction("Details", "Accommodation", new { id = accommodationId });
-    //     }
-
-    //     TempData["ReviewSuccess"] = "Review created.";
-    //     return RedirectToAction("Details", "Accommodation", new { id = accommodationId });
-    // }
+    // Kreiranje recenzije — gost mora biti ulogovan, ne moze dva puta oceniti isti smestaj.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(string accommodationId, int rating, string comment)
     {
-
-        var guestId = HttpContext.Session.GetString("UserId");
-        var role = HttpContext.Session.GetString("Role");
-
-        if (role != "Guest" || string.IsNullOrWhiteSpace(guestId))
+        var guestId = HttpContext.GetCurrentUserId();
+        if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
             return RedirectToAction("Login", "Account");
 
         var review = new Review
         {
-            Id = Guid.NewGuid().ToString(),
             AccommodationId = accommodationId,
             GuestId = guestId,
             Rating = rating,
-            Comment = comment,
-            CreatedAt = DateTime.UtcNow
+            Comment = comment
         };
 
         try
         {
             await _reviewService.CreateAsync(review);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            Console.WriteLine("REVIEW CREATE ERROR: " + ex.Message);
-
             TempData["ReviewError"] = ex.Message;
             return RedirectToAction("Details", "Accommodation", new { id = accommodationId });
         }

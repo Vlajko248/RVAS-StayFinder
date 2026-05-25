@@ -30,6 +30,7 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(User user)
     {
+        // Normalizujemo email odmah — sve malim slovima, bez razmaka
         var email = user.Email?.Trim().ToLowerInvariant();
         var password = user.PasswordHash?.Trim();
         var fullName = user.FullName?.Trim() ?? string.Empty;

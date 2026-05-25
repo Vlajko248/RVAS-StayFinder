@@ -45,25 +45,6 @@ public class ReservationController : Controller
         return View(reservations);
     }
 
-    // Vlasnik moze da vidi rezervacije samo za svoj smestaj.
-    [HttpGet]
-    public async Task<IActionResult> OwnerReservations(string accommodationId)
-    {
-        var ownerId = HttpContext.GetCurrentUserId();
-        if (!HttpContext.IsInRole("Owner") || string.IsNullOrWhiteSpace(ownerId))
-            return RedirectToAction("Login", "Account");
-
-        if (string.IsNullOrWhiteSpace(accommodationId))
-            return BadRequest("AccommodationId is required.");
-
-        var isOwner = await _accommodationService.IsOwnerOfAccommodationAsync(accommodationId, ownerId);
-        if (!isOwner)
-            return Forbid();
-
-        var reservations = await _reservationService.GetByAccommodationIdAsync(accommodationId);
-        return View(reservations);
-    }
-
     [HttpGet]
     public IActionResult Create(string accommodationId)
     {
@@ -91,8 +72,11 @@ public class ReservationController : Controller
         if (!HttpContext.IsInRole("Guest") || string.IsNullOrWhiteSpace(guestId))
             return RedirectToAction("Login", "Account");
 
-        //dodato zbog datuma (datum rezervacije ne moze poceti u proslo vreme)
+        // Normalizujemo datume na UTC da MongoDB ne pomera dane unazad zbog timezone-a
+        reservation.DateFrom = DateTime.SpecifyKind(reservation.DateFrom.Date, DateTimeKind.Utc);
+        reservation.DateTo = DateTime.SpecifyKind(reservation.DateTo.Date, DateTimeKind.Utc);
 
+        // Datum pocetka ne sme biti u proslosti — poredimo samo datum (bez vremena)
         if(reservation.DateFrom.Date < DateTime.UtcNow.Date)
         {
             ModelState.AddModelError(

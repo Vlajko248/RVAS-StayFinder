@@ -46,8 +46,8 @@ public sealed class FileUploadService : IFileUploadService
         return true;
     }
 
-    // Snima fajl u wwwroot/uploads i vraca relativnu putanju za prikaz.
-    public async Task<string> UploadAccommodationImageAsync(IFormFile file, CancellationToken cancellationToken = default)
+    // Snima fajl u wwwroot/uploads i vraca relativnu putanju za prikaz u <img src="...">
+    public async Task<string> UploadAccommodationImageAsync(IFormFile file)
     {
         if (!IsValidImage(file, out var validationError))
             throw new InvalidOperationException(validationError);
@@ -56,16 +56,19 @@ public sealed class FileUploadService : IFileUploadService
         if (string.IsNullOrWhiteSpace(webRootPath))
             throw new InvalidOperationException("Web root path is not configured.");
 
+        // Kreiranje foldera ako ne postoji
         var uploadsDirectory = Path.Combine(webRootPath, "uploads");
         Directory.CreateDirectory(uploadsDirectory);
 
+        // Ime fajla je GUID da izbegnemo konflikte i da ne izlazimo plain korisnicka imena
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var fileName = $"{Guid.NewGuid():N}{extension}";
         var filePath = Path.Combine(uploadsDirectory, fileName);
 
         await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream, cancellationToken);
+        await file.CopyToAsync(stream);
 
+        // Vracamo web-relativnu putanju koja se direktno koristi kao src u HTML-u
         return $"/uploads/{fileName}";
     }
 }

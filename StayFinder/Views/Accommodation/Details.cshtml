@@ -169,59 +169,76 @@
 								<li><a href="#">Lifestyle</a></li>
 							</ul>
 							<div class="user-details row">
-								
-                                
-                                <p class="user-name col-lg-12 col-md-12 col-6">
-                                        <a href="#">
-                                        @(Model.Amenities != null &&
-                                        (Model.Amenities.Contains("WiFi") || Model.Amenities.Contains("Wi-fi"))
-                                            ? "Wi-fi available"
-                                            : "No Wi-fi")
-                                    </a>
 
-                                    <span class="lnr lnr-license"></span>
-                                </p>
+								<p class="user-name col-lg-12 col-md-12 col-6">
+										<a href="#">
+										@(Model.Amenities != null &&
+										(Model.Amenities.Contains("WiFi") || Model.Amenities.Contains("Wi-fi"))
+											? "Wi-fi available"
+											: "No Wi-fi")
+									</a>
 
-                                <p class="date col-lg-12 col-md-12 col-6">
-                                    <a href="#">
-                                        @(Model.Amenities != null &&
-                                        (Model.Amenities.Contains("Klima") || Model.Amenities.Contains("Air Condition"))
-                                            ? "Air Condition"
-                                            : "No Air Condition")
-                                    </a>
+									<span class="lnr lnr-license"></span>
+								</p>
 
-                                    <span class="lnr lnr-cloud"></span>
-                                </p>
+								<p class="date col-lg-12 col-md-12 col-6">
+									<a href="#">
+										@(Model.Amenities != null &&
+										(Model.Amenities.Contains("Klima") || Model.Amenities.Contains("Air Condition"))
+											? "Air Condition"
+											: "No Air Condition")
+									</a>
 
-                                <p class="view col-lg-12 col-md-12 col-6">
-                                    <a href="#">
-                                        @(Model.Amenities != null &&
-                                        Model.Amenities.Contains("Swimming pool")
-                                            ? "Swimming Pool"
-                                            : "No Swimming Pool")
-                                    </a>
+									<span class="lnr lnr-cloud"></span>
+								</p>
 
-                                    <span class="lnr lnr-drop"></span>
-                                </p>
+								<p class="view col-lg-12 col-md-12 col-6">
+									<a href="#">
+										@(Model.Amenities != null &&
+										Model.Amenities.Contains("Swimming pool")
+											? "Swimming Pool"
+											: "No Swimming Pool")
+									</a>
 
-                                <p class="comments col-lg-12 col-md-12 col-6">
-                                    <a href="#">
-                                        @(Model.Amenities != null &&
-                                        Model.Amenities.Contains("Restaurant")
-                                            ? "Restaurant"
-                                            : "No Restaurant")
-                                    </a>
+									<span class="lnr lnr-drop"></span>
+								</p>
 
-                                    <span class="lnr lnr-dinner"></span>
-                                </p>
+								<p class="comments col-lg-12 col-md-12 col-6">
+									<a href="#">
+										@(Model.Amenities != null &&
+										Model.Amenities.Contains("Restaurant")
+											? "Restaurant"
+											: "No Restaurant")
+									</a>
 
-                                <p class="comments col-lg-12 col-md-12 col-6">
-                                    <a href="#">
-                                        $@Model.PricePerNight / night
-                                    </a>
+									<span class="lnr lnr-dinner"></span>
+								</p>
 
-                                    <span class="lnr lnr-cart"></span>
-                                </p>
+								@* Ostale amenities — Parking, Kitchen, TV, Gym i sve sto bude dodato *@
+								@if (Model.Amenities != null)
+								{
+									var extraAmenities = Model.Amenities.Where(a =>
+										a != "WiFi" && a != "Wi-fi" &&
+										a != "Air Condition" && a != "Klima" &&
+										a != "Swimming pool" &&
+										a != "Restaurant").ToList();
+
+									@foreach (var amenity in extraAmenities)
+									{
+										<p class="comments col-lg-12 col-md-12 col-6">
+											<a href="#">@amenity</a>
+											<span class="lnr lnr-checkmark-circle"></span>
+										</p>
+									}
+								}
+
+								<p class="comments col-lg-12 col-md-12 col-6">
+									<a href="#">
+										$@Model.PricePerNight / night
+									</a>
+
+									<span class="lnr lnr-cart"></span>
+								</p>
 
 
 								<ul class="social-links col-lg-12 col-md-12 col-6">
@@ -360,8 +377,8 @@
 									@foreach (var period in bookedPeriods)
 									{
 										<tr>
-											<td>@period.DateFrom.ToString("dd.MM.yyyy")</td>
-											<td>@period.DateTo.ToString("dd.MM.yyyy")</td>
+											<td>@period.DateFrom.Date.ToString("dd.MM.yyyy")</td>
+											<td>@period.DateTo.Date.ToString("dd.MM.yyyy")</td>
 										</tr>
 									}
 								</tbody>

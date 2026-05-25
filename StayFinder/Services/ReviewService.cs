@@ -39,12 +39,6 @@ public sealed class ReviewService : IReviewService
             .AnyAsync();
     }
 
-    // Review je dozvoljen tek nakon zavrsene rezervacije.
-    public async Task<bool> CanGuestReviewAccommodationAsync(string guestId, string accommodationId)
-    {
-        return await _reservationService.HasCompletedReservationAsync(guestId, accommodationId);
-    }
-
     public async Task CreateAsync(Review review)
     {
         if (review.Rating is < 1 or > 5)
@@ -58,9 +52,6 @@ public sealed class ReviewService : IReviewService
 
         if (await HasGuestReviewedAccommodationAsync(review.GuestId, review.AccommodationId))
             throw new InvalidOperationException("Guest already reviewed this accommodation.");
-
-        // if (!await CanGuestReviewAccommodationAsync(review.GuestId, review.AccommodationId))
-        //     throw new InvalidOperationException("Guest can review only after completed stay.");
 
         review.Id ??= Guid.NewGuid().ToString();
         review.Comment = review.Comment?.Trim() ?? string.Empty;

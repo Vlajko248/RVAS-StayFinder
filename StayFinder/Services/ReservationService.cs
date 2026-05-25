@@ -43,6 +43,8 @@ public sealed class ReservationService : IReservationService
 
     public async Task<bool> IsAccommodationAvailableAsync(string accommodationId, DateTime dateFrom, DateTime dateTo)
     {
+        // Klasicna provera preklapanja intervala: A < B_end && B_start < A_end
+        // Ako postoji bar jedna aktivna rezervacija koja se preklapa — smestaj nije slobodan
         var overlappingReservation = await _reservations
             .Find(r =>
                 r.AccommodationId == accommodationId &&
@@ -52,16 +54,6 @@ public sealed class ReservationService : IReservationService
             .FirstOrDefaultAsync();
 
         return overlappingReservation == null;
-    }
-
-    public async Task<bool> HasCompletedReservationAsync(string guestId, string accommodationId)
-    {
-        return await _reservations
-            .Find(r =>
-                r.GuestId == guestId &&
-                r.AccommodationId == accommodationId &&
-                r.DateTo <= DateTime.UtcNow)
-            .AnyAsync();
     }
 
     public async Task CreateAsync(Reservation reservation)

@@ -37,17 +37,19 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+// Sesija mora biti pre UseAuthorization i kontrolera!
 app.UseSession();
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
+// Default ruta: ako nema /controller/action/id, ide na Home/Index
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// Seed ide na startu da uvek imamo testne podatke kad je baza prazna.
+// Seed ide na startu — puni bazu testnim podacima samo ako je prazna
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MongoDbContext>();

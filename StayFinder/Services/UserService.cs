@@ -74,19 +74,11 @@ public sealed class UserService : IUserService
         if (user == null)
             return null;
 
+        // Proveravamo da li se lozinka poklapa sa hashom u bazi
         var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
 
         if (verifyResult == PasswordVerificationResult.Success)
             return user;
-
-        if (user.PasswordHash == password)
-        {
-            var newHash = _passwordHasher.HashPassword(user, password);
-            var update = Builders<User>.Update.Set(u => u.PasswordHash, newHash);
-            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
-            user.PasswordHash = newHash;
-            return user;
-        }
 
         return null;
     }

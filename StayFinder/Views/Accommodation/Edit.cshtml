@@ -82,7 +82,7 @@
                                             var existingImages = Model.ImageUrls ?? new List<string>();
                                         }
 
-                                        <form method="post" asp-controller="Accommodation" asp-action="Edit"
+                                        <form id="editForm" method="post" asp-controller="Accommodation" asp-action="Edit"
                                               asp-route-id="@Model.Id" enctype="multipart/form-data">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" asp-for="Id" />
@@ -234,7 +234,7 @@
         });
 
         // Checkboxes -> hidden Amenities inputi pre submit-a
-        document.querySelector("form").addEventListener("submit", function () {
+        document.getElementById("editForm").addEventListener("submit", function () {
             // Ukloni stare Amenities hidden inpute ako ih ima (resubmit zaštita)
             document.querySelectorAll("input[name^='Amenities']").forEach(el => el.remove());
             const checked = document.querySelectorAll(".amenity-cb:checked");
@@ -243,7 +243,7 @@
                 input.type = "hidden";
                 input.name = `Amenities[${i}]`;
                 input.value = cb.value;
-                document.querySelector("form").appendChild(input);
+                document.getElementById("editForm").appendChild(input);
             });
         });
 

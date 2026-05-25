@@ -59,8 +59,10 @@ public sealed class AccommodationService : IAccommodationService
 
     public async Task CreateAsync(Accommodation accommodation)
     {
+        // Validacija pre upisa — baca InvalidOperationException ako nesto ne valja
         ValidateAccommodation(accommodation);
 
+        // Ako ID nije prosledjen, generisemo novi GUID
         accommodation.Id ??= Guid.NewGuid().ToString();
         accommodation.CreatedAt = DateTime.UtcNow;
 
@@ -70,8 +72,10 @@ public sealed class AccommodationService : IAccommodationService
     public async Task UpdateAsync(string id, Accommodation accommodation)
     {
         ValidateAccommodation(accommodation);
+        // Osiguravamo da ID ostaje isti kao u ruti — ne sme da se promeni
         accommodation.Id = id;
 
+        // ReplaceOne menja ceo dokument sa istim _id
         await _accommodations.ReplaceOneAsync(a => a.Id == id, accommodation);
     }
 

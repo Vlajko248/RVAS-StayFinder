@@ -113,8 +113,8 @@
                                 var accName = accommodations?.FirstOrDefault(a => a.Id == reservation.AccommodationId)?.Name ?? reservation.AccommodationId;
                                 <tr>
                                     <td><a href="/Accommodation/Details/@reservation.AccommodationId">@accName</a></td>
-                                    <td>@reservation.DateFrom.ToString("dd.MM.yyyy")</td>
-                                    <td>@reservation.DateTo.ToString("dd.MM.yyyy")</td>
+                                    <td>@reservation.DateFrom.Date.ToString("dd.MM.yyyy")</td>
+                                    <td>@reservation.DateTo.Date.ToString("dd.MM.yyyy")</td>
                                     <td>$@reservation.TotalPrice</td>
                                     <td>
                                         @{

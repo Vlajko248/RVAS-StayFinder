@@ -101,8 +101,8 @@
                                 <tr>
                                     <td><a href="/Accommodation/Details/@r.AccommodationId">@accName</a></td>
                                     <td>@guestName</td>
-                                    <td>@r.DateFrom.ToString("dd.MM.yyyy")</td>
-                                    <td>@r.DateTo.ToString("dd.MM.yyyy")</td>
+                                    <td>@r.DateFrom.Date.ToString("dd.MM.yyyy")</td>
+                                    <td>@r.DateTo.Date.ToString("dd.MM.yyyy")</td>
                                     <td>$@r.TotalPrice</td>
                                     <td>
                                         <span class="badge @(r.Status == "Confirmed" ? "badge-success" : "badge-secondary")">

@@ -76,7 +76,7 @@
                             <div class="alert alert-danger" asp-validation-summary="All"></div>
                         }
 
-                        <form method="post" asp-controller="Accommodation" asp-action="Create"
+                        <form id="createForm" method="post" asp-controller="Accommodation" asp-action="Create"
                               enctype="multipart/form-data">
                             @Html.AntiForgeryToken()
 
@@ -144,14 +144,14 @@
     <script src="~/js/vendor/bootstrap.min.js"></script>
     <script>
         // Checkboxes -> hidden Amenities inputi pre submit-a
-        document.querySelector("form").addEventListener("submit", function () {
+        document.getElementById("createForm").addEventListener("submit", function () {
             const checked = document.querySelectorAll(".amenity-cb:checked");
             checked.forEach(function (cb, i) {
                 const input = document.createElement("input");
                 input.type = "hidden";
                 input.name = `Amenities[${i}]`;
                 input.value = cb.value;
-                document.querySelector("form").appendChild(input);
+                document.getElementById("createForm").appendChild(input);
             });
         });
 
